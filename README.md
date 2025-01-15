@@ -3,7 +3,7 @@
 Take control of your digital world with `hybr` - a self-hosted infrastructure manager that lets you deploy and manage services with ease.
 
 > [!NOTE]
-> 🚧 This project is under active development. Everything including this documentat may be changed in the future.
+> 🚧 This project is under active development. Everything including this document may be changed in the future.
 > Star the repository to follow our progress!
 
 ## Features
@@ -19,8 +19,11 @@ Take control of your digital world with `hybr` - a self-hosted infrastructure ma
 
 ```bash
 curl -sSL https://hybr.dev/install.sh | bash
+```
 
-# or with wget
+or with `wget`
+
+```bash
 wget -qO- https://hybr.dev/install.sh | bash
 ```
 
