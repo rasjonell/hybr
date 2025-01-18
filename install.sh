@@ -45,7 +45,7 @@ print_bold() {
 
 print_prompt() {
     printf "\n${YELLOW}"
-    read -r -p "$1 " answer
+    read -r -p "$1 " answer < /dev/tty
     printf "\n\n${NC}"
 }
 
