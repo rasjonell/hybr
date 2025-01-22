@@ -30,10 +30,6 @@ print_yellow() {
     printf "%s%s%s\n" "$YELLOW" "$1" "$NC"
 }
 
-print_yellow_no_newline() {
-    printf "%s%s%s" "$YELLOW" "$1" "$NC"
-}
-
 print_blue() {
     printf "%s%s%s\n" "$BLUE" "$1" "$NC"
 }
