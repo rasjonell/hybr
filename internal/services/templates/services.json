@@ -1,0 +1,70 @@
+[
+  {
+    "name": "email",
+    "description": "Email - Self Hosted Email Server",
+    "variables": [
+      {
+        "name": "EMAIL_PASSWORD",
+        "description": "Admin user name for TT-RSS"
+      }
+    ],
+    "templates": [
+      {
+        "sourcePath": "templates/email/docker-compose.yml.tmpl",
+        "targetName": "docker-compose.yml"
+      },
+      {
+        "sourcePath": "templates/email/env.tmpl",
+        "targetName": ".env"
+      }
+    ]
+  },
+  {
+    "name": "tt-rss",
+    "description": "Tiny Tiny RSS - Self-hosted news feed aggregator",
+    "variables": [
+      {
+        "name": "ADMIN_USER_NAME",
+        "description": "Admin user name for TT-RSS"
+      },
+      {
+        "name": "ADMIN_USER_PASS",
+        "description": "Admin user password for TT-RSS"
+      }
+    ],
+    "templates": [
+      {
+        "sourcePath": "templates/tt-rss/docker-compose.yml.tmpl",
+        "targetName": "docker-compose.yml"
+      },
+      {
+        "sourcePath": "templates/tt-rss/env.tmpl",
+        "targetName": ".env"
+      }
+    ]
+  },
+  {
+    "name": "nextcloud",
+    "description": "NextCloud - Google Cloud Alternative",
+    "variables": [
+      {
+        "name": "NC_ADMIN_USERNAME",
+        "description": "Admin user name for Next Cloud"
+      },
+      {
+        "name": "NC_ADMIN_PASS",
+        "description": "Admin user password for Next Cloud"
+      }
+    ],
+    "templates": [
+      {
+        "sourcePath": "templates/nextcloud/docker-compose.yml.tmpl",
+        "targetName": "docker-compose.yml"
+      },
+      {
+        "sourcePath": "templates/nextcloud/env.tmpl",
+        "targetName": ".env"
+      }
+    ]
+  }
+]
