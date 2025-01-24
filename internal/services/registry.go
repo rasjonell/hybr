@@ -51,12 +51,16 @@ func register(s Service) {
 //go:embed templates/services.json
 var defaultJsonData []byte
 
-func getServices() []Service {
+func getServices(forceResetTemplates bool) []Service {
+	var err error = nil
 	var services []Service
 	destPath := filepath.Join(getWorkingDirectory(), "services.json")
 
-	_, err := os.Stat(destPath)
-	if err == nil {
+	if forceResetTemplates {
+	}
+
+	_, err = os.Stat(destPath)
+	if !forceResetTemplates && err == nil {
 		data, err := os.ReadFile(destPath)
 		if err != nil {
 			panic("Unable To Read services.json")
@@ -67,7 +71,7 @@ func getServices() []Service {
 		}
 	}
 
-	if os.IsNotExist(err) {
+	if forceResetTemplates || os.IsNotExist(err) {
 		if err := os.WriteFile(destPath, defaultJsonData, 0644); err != nil {
 			panic(err)
 		}
@@ -80,9 +84,9 @@ func getServices() []Service {
 	return services
 }
 
-func InitRegistry() {
+func InitRegistry(forceResetTemplates bool) {
 	initWorkingDirectory()
-	services := getServices()
+	services := getServices(forceResetTemplates)
 
 	for _, service := range services {
 		register(service)
