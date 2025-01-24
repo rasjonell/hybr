@@ -22,6 +22,7 @@ type Service struct {
 
 type Variable struct {
 	Name        string `json:"name"`
+	Default     string `json:"default"`
 	Description string `json:"description"`
 }
 

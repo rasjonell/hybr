@@ -15,17 +15,69 @@ const (
 	StepConfirmation
 )
 
+type final uint8
+
+type Variable struct {
+	Name        string
+	Default     string
+	Description string
+	Input       textinput.Model
+}
+
+type ServiceModel struct {
+	Name        string
+	Description string
+	Variables   []*Variable
+}
+
 type Model struct {
 	step Step
 
 	selectedServiceNames []string
-	services             []services.Service
-	selected             map[string]services.SelectedServiceModel
+	services             []ServiceModel
+	selected             map[string]*ServiceModel
 
 	cursor             int
 	activeServiceIndex int
+}
 
-	textInput textinput.Model
+var model *Model
+
+func init() {
+	services.InitRegistry(flags.forceResetTemplates)
+	services := services.GetRegisteredServices()
+	modelServices := make([]ServiceModel, len(services), cap(services))
+
+	for i, s := range services {
+		vars := make([]*Variable, len(s.Variables), cap(s.Variables))
+		for i, v := range s.Variables {
+			ti := textinput.New()
+			ti.Prompt = ""
+			ti.Placeholder = v.Default
+			if i == 0 {
+				ti.Focus()
+			}
+
+			vars[i] = &Variable{
+				Input:       ti,
+				Name:        v.Name,
+				Default:     v.Default,
+				Description: v.Description,
+			}
+		}
+
+		modelServices[i] = ServiceModel{
+			Variables:   vars,
+			Name:        s.Name,
+			Description: s.Description,
+		}
+	}
+
+	model = &Model{
+		services: modelServices,
+		step:     StepServiceSelection,
+		selected: make(map[string]*ServiceModel),
+	}
 }
 
 func (m *Model) Init() tea.Cmd {
@@ -33,15 +85,18 @@ func (m *Model) Init() tea.Cmd {
 }
 
 func (m *Model) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
-	switch m.step {
-	case StepServiceSelection:
-		return m.updateServiceSelection(msg)
+	switch msg := msg.(type) {
+	default:
+		switch m.step {
+		case StepServiceSelection:
+			return m.updateServiceSelection(msg)
 
-	case StepVariableInput:
-		return m.updateVariableInput(msg)
+		case StepVariableInput:
+			return m.updateVariableInput(msg)
 
-	case StepConfirmation:
-		return m.updateConfirmation(msg)
+		case StepConfirmation:
+			return m.updateConfirmation(msg)
+		}
 	}
 
 	return m, nil
@@ -67,19 +122,10 @@ func (m *Model) currentServiceName() string {
 	return m.selectedServiceNames[m.activeServiceIndex]
 }
 
-func (m *Model) currentSelectedServiceVariables() *[]services.VariableDefinition {
-	v, exists := m.selected[m.selectedServiceNames[m.activeServiceIndex]]
-	if !exists {
-		panic("fucky wucky")
-	}
-
-	return &v.Variables
+func (m *Model) getCurrentSelectedService() *ServiceModel {
+	return m.selected[m.selectedServiceNames[m.activeServiceIndex]]
 }
 
 func NewProgram() *tea.Program {
-	return tea.NewProgram(&Model{
-		step:     StepServiceSelection,
-		services: services.GetRegisteredServices(),
-		selected: make(map[string]services.SelectedServiceModel),
-	})
+	return tea.NewProgram(model)
 }

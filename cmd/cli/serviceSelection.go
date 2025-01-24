@@ -2,7 +2,6 @@ package main
 
 import (
 	"fmt"
-	"hybr/internal/services"
 	"slices"
 	"strings"
 
@@ -32,11 +31,11 @@ func (m *Model) updateServiceSelection(msg tea.Msg) (tea.Model, tea.Cmd) {
 
 		case "left", "h":
 			m.selectedServiceNames = []string{}
-			m.selected = map[string]services.SelectedServiceModel{}
+			m.selected = map[string]*ServiceModel{}
 
 		case "right", "l":
 			for _, s := range m.services {
-				m.selected[s.Name] = services.SelectedServiceModel{Service: &s, Variables: buildVariableList(&s)}
+				m.selected[s.Name] = &s
 				m.selectedServiceNames = append(m.selectedServiceNames, s.Name)
 			}
 
@@ -48,7 +47,7 @@ func (m *Model) updateServiceSelection(msg tea.Msg) (tea.Model, tea.Cmd) {
 					return n == selected.Name
 				})
 			} else {
-				m.selected[selected.Name] = services.SelectedServiceModel{Service: &selected, Variables: buildVariableList(&selected)}
+				m.selected[selected.Name] = &selected
 				m.selectedServiceNames = append(m.selectedServiceNames, selected.Name)
 			}
 
@@ -59,7 +58,6 @@ func (m *Model) updateServiceSelection(msg tea.Msg) (tea.Model, tea.Cmd) {
 
 			m.cursor = 0
 			m.step = StepVariableInput
-			m.textInput = generateVariableInput()
 		}
 	}
 
@@ -89,15 +87,4 @@ func (m *Model) viewServiceSelection() string {
 	}
 
 	return strings.Join(lines, "\n") + "\n"
-}
-
-func buildVariableList(s *services.Service) []services.VariableDefinition {
-	varList := make([]services.VariableDefinition, len(s.Variables), len(s.Variables))
-	for i, v := range s.Variables {
-		varList[i] = services.VariableDefinition{
-			Key:   v.Name,
-			Value: "",
-		}
-	}
-	return varList
 }

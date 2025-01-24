@@ -4,6 +4,7 @@
     "description": "Email - Self Hosted Email Server",
     "variables": [
       {
+        "default": "Password",
         "name": "EMAIL_PASSWORD",
         "description": "Admin user name for TT-RSS"
       }
@@ -24,10 +25,12 @@
     "description": "Tiny Tiny RSS - Self-hosted news feed aggregator",
     "variables": [
       {
+        "default": "UserName",
         "name": "ADMIN_USER_NAME",
         "description": "Admin user name for TT-RSS"
       },
       {
+        "default": "Password",
         "name": "ADMIN_USER_PASS",
         "description": "Admin user password for TT-RSS"
       }
@@ -48,10 +51,12 @@
     "description": "NextCloud - Google Cloud Alternative",
     "variables": [
       {
+        "default": "UserName",
         "name": "NC_ADMIN_USERNAME",
         "description": "Admin user name for Next Cloud"
       },
       {
+        "default": "Password",
         "name": "NC_ADMIN_PASS",
         "description": "Admin user password for Next Cloud"
       }
