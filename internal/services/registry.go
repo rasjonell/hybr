@@ -1,8 +1,9 @@
 package services
 
 import (
-	_ "embed"
+	"embed"
 	"encoding/json"
+	"io"
 	"os"
 	"path/filepath"
 	"sync"
@@ -14,10 +15,10 @@ var (
 )
 
 type Service struct {
-	Name        string     `json:"name"`
-	Description string     `json:"description"`
-	Variables   []Variable `json:"variables"`
-	Templates   []Template `json:"templates"`
+	Name        string                `json:"name"`
+	Description string                `json:"description"`
+	Templates   []string              `json:"templates"`
+	Variables   map[string][]Variable `json:"variables"`
 }
 
 type Variable struct {
@@ -32,8 +33,8 @@ type Template struct {
 }
 
 type SelectedServiceModel struct {
-	*Service
-	Variables []VariableDefinition
+	ServiceName string
+	Variables   map[string][]*VariableDefinition
 }
 
 type VariableDefinition struct {
@@ -51,13 +52,15 @@ func register(s Service) {
 //go:embed templates/services.json
 var defaultJsonData []byte
 
+//go:embed templates/**/*
+var templatesFS embed.FS
+
 func getServices(forceResetTemplates bool) []Service {
 	var err error = nil
 	var services []Service
-	destPath := filepath.Join(getWorkingDirectory(), "services.json")
 
-	if forceResetTemplates {
-	}
+	servicesPath := filepath.Join(getWorkingDirectory(), "services")
+	destPath := filepath.Join(getWorkingDirectory(), "services.json")
 
 	_, err = os.Stat(destPath)
 	if !forceResetTemplates && err == nil {
@@ -79,12 +82,39 @@ func getServices(forceResetTemplates bool) []Service {
 		if err := json.Unmarshal(defaultJsonData, &services); err != nil {
 			panic(err)
 		}
+
+		for _, s := range services {
+			tPath := filepath.Join(servicesPath, s.Name, "templates")
+			if err := os.MkdirAll(tPath, 0755); err != nil {
+				panic(err)
+			}
+
+			for _, templName := range s.Templates {
+				sourceFile, err := templatesFS.Open(filepath.Join("templates", s.Name, templName))
+				if err != nil {
+					panic(err)
+				}
+				defer sourceFile.Close()
+
+				destFile, err := os.Create(filepath.Join(tPath, templName))
+				if err != nil {
+					panic(err)
+				}
+				defer destFile.Close()
+
+				_, err = io.Copy(destFile, sourceFile)
+				if err != nil {
+					panic(err)
+				}
+			}
+		}
 	}
 
 	return services
 }
 
 func InitRegistry(forceResetTemplates bool) {
+	//TODO: if forceResetTemplates, empty $workingDirectory/services
 	initWorkingDirectory()
 	services := getServices(forceResetTemplates)
 

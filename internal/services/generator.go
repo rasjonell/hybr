@@ -4,6 +4,8 @@ import (
 	"fmt"
 	"os"
 	"path/filepath"
+	"strings"
+	"text/template"
 )
 
 const (
@@ -16,36 +18,64 @@ func getWorkingDirectory() string {
 }
 
 func initWorkingDirectory() error {
-	path := getWorkingDirectory()
-
-	if err := os.MkdirAll(path, 0755); err != nil {
+	if err := os.MkdirAll(filepath.Join(getWorkingDirectory(), "services"), 0755); err != nil {
 		return err
 	}
 
 	return nil
 }
 
-func installServices(selected map[string]SelectedServiceModel) error {
-	basePath := filepath.Join(getWorkingDirectory(), "services")
+func buildTemplateData(vars []*VariableDefinition) map[string]string {
+	data := make(map[string]string)
 
+	for _, v := range vars {
+		data[v.Key] = v.Value
+	}
+
+	return data
+}
+
+func InstallServices(selected []*SelectedServiceModel) (err error) {
 	for _, service := range selected {
-		servicePath := filepath.Join(basePath, service.Name)
-		if err := os.MkdirAll(servicePath, 0755); err != nil {
-			return err
-		}
+		servicePath := filepath.Join(getWorkingDirectory(), "services", service.ServiceName, "templates")
 
-		for _, tpl := range service.Templates {
-			if err := processTemplate(servicePath, tpl, service.Variables); err != nil {
+		err = filepath.Walk(servicePath, func(path string, info os.FileInfo, err error) error {
+			if err != nil {
 				return err
 			}
+
+			if info.IsDir() || filepath.Ext(path) != ".templ" {
+				return nil
+			}
+
+			filename := filepath.Base(path)
+			varDef, exists := service.Variables[filename]
+
+			tmpl, err := template.ParseFiles(path)
+			if err != nil {
+				return fmt.Errorf("Unable to parse template %s: %w", filename, err)
+			}
+
+			outputPath := filepath.Join(filepath.Dir(path), "..", strings.TrimSuffix(filename, ".templ"))
+			out, err := os.Create(outputPath)
+			if err != nil {
+				return err
+			}
+			defer out.Close()
+
+			if !exists {
+				err = tmpl.Execute(out, nil)
+			} else {
+				err = tmpl.Execute(out, buildTemplateData(varDef))
+			}
+
+			return nil
+		})
+
+		if err != nil {
+			return err
 		}
 	}
 
-	return nil
-}
-
-func processTemplate(basePath string, tpl Template, vars []VariableDefinition) error {
-	_, _, _ = basePath, tpl, vars
-	// TODO implement template processing
-	return fmt.Errorf("Not Implemented")
+	return
 }
