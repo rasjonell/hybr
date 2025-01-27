@@ -2,6 +2,7 @@ package main
 
 import (
 	"fmt"
+	"hybr/internal/services"
 	"os"
 )
 
@@ -10,10 +11,13 @@ func main() {
 		os.Exit(1)
 	}
 
-	for name, s := range model.selected {
-		fmt.Printf("Vars for %s\n\n", name)
-		for _, v := range s.Variables {
-			fmt.Printf("%s = %s\n", v.Name, v.Input.Value())
-		}
+	if len(model.finalServices) == 0 {
+		os.Exit(0)
 	}
+
+	if err := services.InstallServices(model.finalServices); err != nil {
+		panic(err)
+	}
+
+	fmt.Println("Check out ~/.hybr/services")
 }

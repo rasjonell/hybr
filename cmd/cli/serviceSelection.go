@@ -35,7 +35,7 @@ func (m *Model) updateServiceSelection(msg tea.Msg) (tea.Model, tea.Cmd) {
 
 		case "right", "l":
 			for _, s := range m.services {
-				m.selected[s.Name] = &s
+				m.selected[s.Name] = s
 				m.selectedServiceNames = append(m.selectedServiceNames, s.Name)
 			}
 
@@ -47,7 +47,7 @@ func (m *Model) updateServiceSelection(msg tea.Msg) (tea.Model, tea.Cmd) {
 					return n == selected.Name
 				})
 			} else {
-				m.selected[selected.Name] = &selected
+				m.selected[selected.Name] = selected
 				m.selectedServiceNames = append(m.selectedServiceNames, selected.Name)
 			}
 

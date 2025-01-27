@@ -12,6 +12,7 @@ func (m *Model) updateConfirmation(msg tea.Msg) (tea.Model, tea.Cmd) {
 	case tea.KeyMsg:
 		switch msg.Type {
 		case tea.KeyEnter:
+			m.buildFinalServices()
 			return m, tea.Quit
 		}
 	}
