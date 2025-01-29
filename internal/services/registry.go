@@ -15,10 +15,11 @@ var (
 )
 
 type Service struct {
-	Name        string                `json:"name"`
-	Description string                `json:"description"`
-	Templates   []string              `json:"templates"`
-	Variables   map[string][]Variable `json:"variables"`
+	Name           string                `json:"name"`
+	Description    string                `json:"description"`
+	InstallCommand string                `json:"installCommand"`
+	Templates      []string              `json:"templates"`
+	Variables      map[string][]Variable `json:"variables"`
 }
 
 type Variable struct {
@@ -33,8 +34,9 @@ type Template struct {
 }
 
 type SelectedServiceModel struct {
-	ServiceName string
-	Variables   map[string][]*VariableDefinition
+	ServiceName    string
+	InstallCommand string
+	Variables      map[string][]*VariableDefinition
 }
 
 type VariableDefinition struct {

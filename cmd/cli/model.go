@@ -26,10 +26,11 @@ type Variable struct {
 }
 
 type ServiceModel struct {
-	Name        string
-	Description string
-	Templates   []string
-	Variables   []*Variable
+	Name           string
+	Description    string
+	InstallCommand string
+	Templates      []string
+	Variables      []*Variable
 }
 
 type Model struct {
@@ -76,10 +77,11 @@ func init() {
 		}
 
 		modelServices[i] = &ServiceModel{
-			Variables:   vars,
-			Name:        s.Name,
-			Templates:   s.Templates,
-			Description: s.Description,
+			Variables:      vars,
+			Name:           s.Name,
+			Templates:      s.Templates,
+			Description:    s.Description,
+			InstallCommand: s.InstallCommand,
 		}
 	}
 
@@ -157,8 +159,9 @@ func (m *Model) buildFinalServices() {
 		}
 
 		finalServices = append(finalServices, &services.SelectedServiceModel{
-			ServiceName: serviceName,
-			Variables:   variableDefinitions,
+			ServiceName:    serviceName,
+			Variables:      variableDefinitions,
+			InstallCommand: service.InstallCommand,
 		})
 	}
 
