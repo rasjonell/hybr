@@ -70,20 +70,38 @@ check_command() {
 get_package_names() {
     case $1 in
         apt-get)
-            echo "golang-go docker.io nginx"
+            echo "golang-go nginx docker-ce docker-ce-cli containerd.io docker-buildx-plugin docker-compose-plugin"
             ;;
         pacman)
-            echo "go docker nginx"
+            echo "go docker docker-compose nginx"
             ;;
         xbps-install)
-            echo "go docker nginx"
+            echo "go docker docker-compose nginx"
             ;;
     esac
+}
+
+install_apt_repo() {
+  # Add Docker's official GPG key:
+  sudo apt-get update
+  sudo apt-get install ca-certificates curl
+  sudo install -m 0755 -d /etc/apt/keyrings
+  sudo curl -fsSL https://download.docker.com/linux/ubuntu/gpg -o /etc/apt/keyrings/docker.asc
+  sudo chmod a+r /etc/apt/keyrings/docker.asc
+
+  # Add the repository to Apt sources:
+  echo \
+    "deb [arch=$(dpkg --print-architecture) signed-by=/etc/apt/keyrings/docker.asc] https://download.docker.com/linux/ubuntu \
+    $(. /etc/os-release && echo "$VERSION_CODENAME") stable" | \
+    sudo tee /etc/apt/sources.list.d/docker.list > /dev/null
+
+  sudo apt-get update
 }
 
 get_install_command() {
     case $1 in
         apt-get)
+            install_apt_repo
             echo "apt-get install -y"
             ;;
         pacman)
@@ -97,7 +115,7 @@ get_install_command() {
 
 check_and_install_dependencies() {
     missing_deps=""
-    deps="go docker nginx"
+    deps="go docker docker-compose nginx"
 
     for dep in $deps; do
         if ! check_command "$dep"; then
@@ -202,7 +220,7 @@ download_and_run() {
 
     rm -rf "temp_dir"
 
-    if ! "$install_dir/hybr"; then
+    if ! "$install_dir/hybr" --forceDefault; then
         print_red "hybr CLI application failed to run"
         return 1
     fi
@@ -217,6 +235,7 @@ if [ $ret_val -ne 0 ]; then
 fi
 
 if check_and_install_dependencies; then
+    sudo usermod -aG docker $USER && newgrp docker
     if download_and_run "0.0.0"; then
         exit 0
     else
