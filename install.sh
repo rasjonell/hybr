@@ -220,7 +220,7 @@ download_and_run() {
 
     rm -rf "temp_dir"
 
-    if ! "$install_dir/hybr" --forceDefault; then
+    if ! sudo "$install_dir/hybr" --forceDefault; then
         print_red "hybr CLI application failed to run"
         return 1
     fi
