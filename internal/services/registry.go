@@ -57,7 +57,7 @@ var defaultJsonData []byte
 //go:embed templates/**/*
 var templatesFS embed.FS
 
-func getServices(forceResetTemplates bool) []Service {
+func getServices() []Service {
 	var err error = nil
 	var services []Service
 
@@ -65,7 +65,7 @@ func getServices(forceResetTemplates bool) []Service {
 	destPath := filepath.Join(getWorkingDirectory(), "services.json")
 
 	_, err = os.Stat(destPath)
-	if !forceResetTemplates && err == nil {
+	if err == nil {
 		data, err := os.ReadFile(destPath)
 		if err != nil {
 			panic("Unable To Read services.json")
@@ -76,7 +76,7 @@ func getServices(forceResetTemplates bool) []Service {
 		}
 	}
 
-	if forceResetTemplates || os.IsNotExist(err) {
+	if os.IsNotExist(err) {
 		if err := os.WriteFile(destPath, defaultJsonData, 0644); err != nil {
 			panic(err)
 		}
@@ -116,9 +116,12 @@ func getServices(forceResetTemplates bool) []Service {
 }
 
 func InitRegistry(forceResetTemplates bool) {
-	//TODO: if forceResetTemplates, empty $workingDirectory/services
+	if forceResetTemplates {
+		cleanWorkingDirectory()
+	}
+
 	initWorkingDirectory()
-	services := getServices(forceResetTemplates)
+	services := getServices()
 
 	for _, service := range services {
 		register(service)

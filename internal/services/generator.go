@@ -2,6 +2,7 @@ package services
 
 import (
 	"fmt"
+	"hybr/internal/nginx"
 	"os"
 	"os/exec"
 	"path/filepath"
@@ -16,6 +17,14 @@ const (
 func getWorkingDirectory() string {
 	home, _ := os.UserHomeDir()
 	return filepath.Join(home, HybrDir)
+}
+
+func cleanWorkingDirectory() error {
+	if err := os.RemoveAll(getWorkingDirectory()); err != nil {
+		return err
+	}
+
+	return nil
 }
 
 func initWorkingDirectory() error {
@@ -40,6 +49,7 @@ func InstallServices(selected []*SelectedServiceModel) (err error) {
 	for _, service := range selected {
 		serviceDir := filepath.Join(getWorkingDirectory(), "services", service.ServiceName)
 		servicePath := filepath.Join(serviceDir, "templates")
+		var port string
 
 		err = filepath.Walk(servicePath, func(path string, info os.FileInfo, err error) error {
 			if err != nil {
@@ -69,6 +79,9 @@ func InstallServices(selected []*SelectedServiceModel) (err error) {
 				err = tmpl.Execute(out, nil)
 			} else {
 				err = tmpl.Execute(out, buildTemplateData(varDef))
+				if port == "" {
+					port = findPort(varDef)
+				}
 			}
 
 			return nil
@@ -89,7 +102,12 @@ func InstallServices(selected []*SelectedServiceModel) (err error) {
 			return fmt.Errorf("Unable to install %s Service", service.ServiceName)
 		}
 
-		fmt.Printf("[%s] Is installed and running successfully\n", service.ServiceName)
+		if err := nginx.AddSevice(service.ServiceName, port); err != nil {
+			return err
+		}
+
+		fmt.Printf("\n[%s] Is Installed and Nginx Is Configured\n", service.ServiceName)
+		fmt.Printf("[%s] Is Running at localhost/%s\n", service.ServiceName, service.ServiceName)
 	}
 
 	return
