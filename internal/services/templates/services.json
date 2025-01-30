@@ -6,9 +6,9 @@
     "variables": {
       ".env.templ": [
         {
-          "default": "UserName",
-          "name": "ADMIN_USER_NAME",
-          "description": "Admin user name for TT-RSS"
+          "name": "PORT",
+          "default": "8280",
+          "description": "HTTP Port"
         },
         {
           "default": "Password",

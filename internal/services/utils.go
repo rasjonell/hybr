@@ -83,3 +83,14 @@ func pipeCmdToStdout(cmd *exec.Cmd, label string) error {
 
 	return nil
 }
+
+func findPort(varDef []*VariableDefinition) string {
+	var port string
+	for _, def := range varDef {
+		if def.Key == "PORT" {
+			port = def.Value
+		}
+	}
+
+	return port
+}

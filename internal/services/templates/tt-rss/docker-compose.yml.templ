@@ -1,9 +1,6 @@
 version: '3'
 
 services:
-
-  # see FAQ entry below if upgrading from a different PostgreSQL major version (e.g. 12 to 15):
-  # https://tt-rss.org/wiki/InstallationNotes/#i-got-the-updated-compose-file-above-and-now-my-database-keeps-restarting
   db:
     image: postgres:15-alpine
     restart: unless-stopped
