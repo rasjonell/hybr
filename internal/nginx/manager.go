@@ -8,8 +8,14 @@ import (
 )
 
 type NginxServiceConfig struct {
-	Name string
-	Port string
+	Name   string
+	Port   string
+	Domain string
+}
+
+type BaseConfig struct {
+	Email  string
+	Domain string
 }
 
 const (
@@ -17,7 +23,11 @@ const (
 	ConfDDir = "/etc/nginx/conf.d"
 )
 
-func Init(forceDefault bool) error {
+var baseConfig *BaseConfig
+
+func Init(bc *BaseConfig, forceDefault bool) error {
+	baseConfig = bc
+
 	dirs := []string{ConfDir, ConfDDir}
 	for _, dir := range dirs {
 		if err := os.MkdirAll(dir, 0755); err != nil {
@@ -48,8 +58,9 @@ func AddSevice(name, port string) error {
 	}
 
 	config := NginxServiceConfig{
-		Name: name,
-		Port: port,
+		Name:   name,
+		Port:   port,
+		Domain: baseConfig.Domain,
 	}
 
 	if err := generateServiceConfig(config); err != nil {

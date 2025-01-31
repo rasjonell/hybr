@@ -45,7 +45,7 @@ func buildTemplateData(vars []*VariableDefinition) map[string]string {
 	return data
 }
 
-func InstallServices(selected []*SelectedServiceModel) (err error) {
+func InstallServices(selected []*SelectedServiceModel, bc *nginx.BaseConfig) (err error) {
 	for _, service := range selected {
 		serviceDir := filepath.Join(getWorkingDirectory(), "services", service.ServiceName)
 		servicePath := filepath.Join(serviceDir, "templates")
@@ -107,7 +107,7 @@ func InstallServices(selected []*SelectedServiceModel) (err error) {
 		}
 
 		fmt.Printf("\n[%s] Is Installed and Nginx Is Configured\n", service.ServiceName)
-		fmt.Printf("[%s] Is Running at localhost/%s\n", service.ServiceName, service.ServiceName)
+		fmt.Printf("[%s] Is Running at %s/%s\n", service.ServiceName, bc.Domain, service.ServiceName)
 	}
 
 	return

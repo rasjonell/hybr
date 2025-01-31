@@ -5,6 +5,8 @@ import (
 	"os"
 	"os/exec"
 	"strconv"
+
+	"github.com/charmbracelet/bubbles/textinput"
 )
 
 func checkRootPermissions() {
@@ -25,4 +27,12 @@ func checkRootPermissions() {
 		fmt.Printf(("You need root privileges to run this program\nPlease run with sudo\n"))
 		os.Exit(1)
 	}
+}
+
+func buildTextInput(def string) textinput.Model {
+	ti := textinput.New()
+	ti.Prompt = ""
+	ti.Placeholder = def
+
+	return ti
 }

@@ -1,6 +1,7 @@
 package main
 
 import (
+	"hybr/internal/nginx"
 	"hybr/internal/services"
 
 	"github.com/charmbracelet/bubbles/textinput"
@@ -10,7 +11,8 @@ import (
 type Step int
 
 const (
-	StepServiceSelection Step = iota
+	StepBaseConfigInput Step = iota
+	StepServiceSelection
 	StepVariableInput
 	StepConfirmation
 )
@@ -41,14 +43,16 @@ type Model struct {
 	selected             map[string]*ServiceModel
 	finalServices        []*services.SelectedServiceModel
 
+	baseConfigVariables []*Variable
+	finalBaseConfig     *nginx.BaseConfig
+
 	cursor             int
 	activeServiceIndex int
 }
 
 var model *Model
 
-func init() {
-	services.InitRegistry(flags.forceResetTemplates)
+func InitCLI() {
 	registeredServices := services.GetRegisteredServices()
 	modelServices := make([]*ServiceModel, len(registeredServices), cap(registeredServices))
 
@@ -58,9 +62,7 @@ func init() {
 
 		for template, variableDefinitions := range s.Variables {
 			for i, v := range variableDefinitions {
-				ti := textinput.New()
-				ti.Prompt = ""
-				ti.Placeholder = v.Default
+				ti := buildTextInput(v.Default)
 				if i == templateCount && i == 0 {
 					ti.Focus()
 				}
@@ -85,10 +87,16 @@ func init() {
 		}
 	}
 
+	step := StepBaseConfigInput
+	if flags.isBaseConfigComplete {
+		step = StepServiceSelection
+	}
+
 	model = &Model{
-		services: modelServices,
-		step:     StepServiceSelection,
-		selected: make(map[string]*ServiceModel),
+		step:                step,
+		services:            modelServices,
+		baseConfigVariables: getBaseConfigVariables(),
+		selected:            make(map[string]*ServiceModel),
 	}
 }
 
@@ -100,6 +108,9 @@ func (m *Model) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
 	switch msg := msg.(type) {
 	default:
 		switch m.step {
+		case StepBaseConfigInput:
+			return m.updateBaseConfigInput(msg)
+
 		case StepServiceSelection:
 			return m.updateServiceSelection(msg)
 
@@ -116,6 +127,9 @@ func (m *Model) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
 
 func (m *Model) View() string {
 	switch m.step {
+	case StepBaseConfigInput:
+		return m.viewBaseConfigInput()
+
 	case StepServiceSelection:
 		return m.viewServiceSelection()
 
@@ -139,8 +153,7 @@ func (m *Model) getCurrentSelectedService() *ServiceModel {
 }
 
 func (m *Model) buildFinalServices() {
-	finalServices := []*services.SelectedServiceModel{}
-
+	var finalServices []*services.SelectedServiceModel
 	for serviceName, service := range m.selected {
 		variableDefinitions := make(map[string][]*services.VariableDefinition)
 
@@ -164,8 +177,26 @@ func (m *Model) buildFinalServices() {
 			InstallCommand: service.InstallCommand,
 		})
 	}
-
 	m.finalServices = finalServices
+
+	if flags.isBaseConfigComplete {
+		m.finalBaseConfig = &nginx.BaseConfig{
+			Email:  flags.email,
+			Domain: flags.domain,
+		}
+		return
+	}
+
+	var finalBaseConfig nginx.BaseConfig
+	for _, def := range m.baseConfigVariables {
+		switch def.Name {
+		case "Email":
+			finalBaseConfig.Email = def.Input.Value()
+		case "Domain":
+			finalBaseConfig.Domain = def.Input.Value()
+		}
+	}
+	m.finalBaseConfig = &finalBaseConfig
 }
 
 func NewProgram() *tea.Program {
