@@ -1,0 +1,3 @@
+#!/bin/sh
+
+./bin/release && scp .releases/hybr rasjonell@rasjonell.info:/usr/local/bin

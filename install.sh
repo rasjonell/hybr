@@ -70,13 +70,13 @@ check_command() {
 get_package_names() {
     case $1 in
         apt-get)
-            echo "golang-go nginx docker-ce docker-ce-cli containerd.io docker-buildx-plugin docker-compose-plugin"
+            echo "golang-go nginx docker-ce docker-ce-cli containerd.io docker-buildx-plugin docker-compose-plugin certbot"
             ;;
         pacman)
-            echo "go docker docker-compose nginx"
+            echo "go docker docker-compose nginx certbot"
             ;;
         xbps-install)
-            echo "go docker docker-compose nginx"
+            echo "go docker docker-compose nginx certbot"
             ;;
     esac
 }
@@ -115,7 +115,7 @@ get_install_command() {
 
 check_and_install_dependencies() {
     missing_deps=""
-    deps="go docker docker-compose nginx"
+    deps="go docker docker-compose nginx certbot"
 
     for dep in $deps; do
         if ! check_command "$dep"; then
