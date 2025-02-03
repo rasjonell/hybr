@@ -1,6 +1,14 @@
 #!/bin/sh
 
+ROOT="$(pwd)"
+
 mkdir -p .releases
 
-GOOS=linux GOARCH=amd64 go build -ldflags="-s -w" -o .releases/hybr hybr/cmd/cli && upx .releases/hybr
-GOOS=linux GOARCH=amd64 go build -ldflags="-s -w" -o .releases/hybr-server hybr/cmd/server && upx .releases/hybr-server
+GOOS=linux GOARCH=amd64 go build -ldflags="-s -w" -o $ROOT/.releases/hybr hybr/cmd/cli && \
+  upx $ROOT/.releases/hybr
+
+cd cmd/server && \
+  templ generate && \
+  npm run build && \
+  GOOS=linux GOARCH=amd64 go build -ldflags="-s -w" -o $ROOT/.releases/hybr-server hybr/cmd/server && \
+  upx $ROOT/.releases/hybr-server
