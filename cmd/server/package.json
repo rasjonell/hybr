@@ -1,0 +1,17 @@
+{
+  "name": "hybr-server",
+  "version": "0.0.0",
+  "description": "",
+  "main": "index.js",
+  "scripts": {
+    "build": "npx @tailwindcss/cli -i ./static/css/src.css -o ./static/css/tailwind.css",
+    "watch": "npx @tailwindcss/cli -i ./static/css/src.css -o ./static/css/tailwind.css --watch"
+  },
+  "keywords": [],
+  "author": "",
+  "license": "ISC",
+  "devDependencies": {
+    "tailwindcss": "^4.0.3",
+    "@tailwindcss/cli": "^4.0.3"
+  }
+}

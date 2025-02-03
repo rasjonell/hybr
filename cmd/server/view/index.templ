@@ -1,0 +1,14 @@
+package view
+
+templ Index() {
+	<header>
+		<h1 class="text-center text-3xl font-bold">
+			Hello, Hybr
+		</h1>
+	</header>
+	<div class="flex justify-center mt-10">
+		<button hx-get="/foo" hx-swap="outerHTML" class="btn bg-teal-200 p-4 rounded-lg cursor-pointer">
+			Get Services
+		</button>
+	</div>
+}

@@ -1,21 +1,22 @@
 package main
 
 import (
-	"fmt"
-	"hybr/internal/services"
+	"hybr/cmd/server/view"
+	"hybr/cmd/server/view/layout"
+	"hybr/cmd/server/view/partials"
+	"log"
 	"net/http"
-	"strings"
+
+	"github.com/a-h/templ"
 )
 
 func main() {
-	http.HandleFunc("/", func(w http.ResponseWriter, r *http.Request) {
-		installedServices := services.GetInstalledServices()
-		fmt.Fprintf(w,
-			"Hello from Hybr server\n\nYou have %d Installed Services:\n%s\n",
-			len(installedServices), strings.Join(installedServices, "\n"),
-		)
-	})
+	fs := http.FileServer(http.Dir("./static"))
+	http.Handle("/static/", http.StripPrefix("/static/", fs))
 
-	fmt.Println("Server running on :8080")
-	http.ListenAndServe(":8080", nil)
+	c := layout.Base(view.Index())
+	http.Handle("/", templ.Handler(c))
+	http.Handle("/foo", templ.Handler(partials.ServiceList()))
+
+	log.Fatal(http.ListenAndServe(":8080", nil))
 }
