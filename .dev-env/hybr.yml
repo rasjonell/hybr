@@ -18,7 +18,7 @@ windows:
   - Server:
       layout: main-vertical
       panes:
-        - go run hybr/cmd/server
+        - cd cmd/server && air
 
   - VPS:
       layout: main-vertical
