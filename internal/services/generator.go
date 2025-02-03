@@ -98,16 +98,16 @@ func InstallServices(selected []*SelectedServiceModel, bc *nginx.BaseConfig) (er
 		cmd := exec.Command("sh", "-c", service.InstallCommand)
 		cmd.Dir = serviceDir
 
-		if err := pipeCmdToStdout(cmd, service.ServiceName); err != nil {
+		if err := nginx.PipeCmdToStdout(cmd, service.ServiceName); err != nil {
 			return fmt.Errorf("Unable to install %s Service", service.ServiceName)
 		}
 
-		if err := nginx.AddSevice(service.ServiceName, port); err != nil {
+		if err := nginx.AddSevice(service.ServiceName, port, service.SubDomain); err != nil {
 			return err
 		}
 
 		fmt.Printf("\n[%s] Is Installed and Nginx Is Configured\n", service.ServiceName)
-		fmt.Printf("[%s] Is Running at %s/%s\n", service.ServiceName, bc.Domain, service.ServiceName)
+		fmt.Printf("[%s] Is Running at %s\n", service.ServiceName, nginx.BuildServerName(service.SubDomain, bc.Domain, service.ServiceName))
 	}
 
 	return

@@ -23,7 +23,7 @@ func main() {
 		os.Exit(0)
 	}
 
-	if err := nginx.Init(model.finalBaseConfig, flags.forceResetTemplates); err != nil {
+	if err := nginx.Init(model.finalBaseConfig, flags.forceResetTemplates, flags.forceNoSSL); err != nil {
 		panic(err)
 	}
 

@@ -19,8 +19,14 @@ func generateMainConfig() error {
 	return os.WriteFile(configPath, tmpl, 0644)
 }
 
-func generateServiceConfig(config NginxServiceConfig) error {
-	tmpl, err := parseTemplate("service", config)
+func generateServiceConfig(config NginxServiceConfig, forceNoSSL bool) error {
+	tmplName := "service-ssl"
+	if forceNoSSL {
+		tmplName = "service"
+	}
+
+	config.Domain = BuildServerName(config.SubDomain, config.Domain, config.Name)
+	tmpl, err := parseTemplate(tmplName, config)
 	if err != nil {
 		return err
 	}

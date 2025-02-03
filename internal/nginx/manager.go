@@ -8,9 +8,10 @@ import (
 )
 
 type NginxServiceConfig struct {
-	Name   string
-	Port   string
-	Domain string
+	SubDomain bool
+	Name      string
+	Port      string
+	Domain    string
 }
 
 type BaseConfig struct {
@@ -24,9 +25,11 @@ const (
 )
 
 var baseConfig *BaseConfig
+var forceNoSSL bool
 
-func Init(bc *BaseConfig, forceDefault bool) error {
+func Init(bc *BaseConfig, forceDefault, noSSL bool) error {
 	baseConfig = bc
+	forceNoSSL = noSSL
 
 	dirs := []string{ConfDir, ConfDDir}
 	for _, dir := range dirs {
@@ -52,19 +55,26 @@ func Init(bc *BaseConfig, forceDefault bool) error {
 	return nil
 }
 
-func AddSevice(name, port string) error {
+func AddSevice(name, port string, subDomain bool) error {
 	if port == "" {
 		return fmt.Errorf("Failed to find PORT for service: %s", name)
 	}
 
 	config := NginxServiceConfig{
-		Name:   name,
-		Port:   port,
-		Domain: baseConfig.Domain,
+		Name:      name,
+		Port:      port,
+		SubDomain: subDomain,
+		Domain:    baseConfig.Domain,
 	}
 
-	if err := generateServiceConfig(config); err != nil {
+	if err := generateServiceConfig(config, forceNoSSL); err != nil {
 		return fmt.Errorf("Failed to generate service config: %w", err)
+	}
+
+	if !forceNoSSL {
+		if err := ObtainSSLCert(config, baseConfig); err != nil {
+			return err
+		}
 	}
 
 	return Reload()

@@ -28,6 +28,7 @@ type Variable struct {
 }
 
 type ServiceModel struct {
+	SubDomain      bool
 	Name           string
 	Description    string
 	InstallCommand string
@@ -81,6 +82,7 @@ func InitCLI() {
 		modelServices[i] = &ServiceModel{
 			Variables:      vars,
 			Name:           s.Name,
+			SubDomain:      s.SubDomain,
 			Templates:      s.Templates,
 			Description:    s.Description,
 			InstallCommand: s.InstallCommand,
@@ -88,7 +90,7 @@ func InitCLI() {
 	}
 
 	step := StepBaseConfigInput
-	if flags.isBaseConfigComplete {
+	if flags.isBaseConfigComplete || flags.forceNoSSL {
 		step = StepServiceSelection
 	}
 
@@ -172,6 +174,7 @@ func (m *Model) buildFinalServices() {
 		}
 
 		finalServices = append(finalServices, &services.SelectedServiceModel{
+			SubDomain:      service.SubDomain,
 			ServiceName:    serviceName,
 			Variables:      variableDefinitions,
 			InstallCommand: service.InstallCommand,
@@ -191,9 +194,17 @@ func (m *Model) buildFinalServices() {
 	for _, def := range m.baseConfigVariables {
 		switch def.Name {
 		case "Email":
-			finalBaseConfig.Email = def.Input.Value()
+			val := def.Input.Value()
+			if val == "" {
+				val = def.Default
+			}
+			finalBaseConfig.Email = val
 		case "Domain":
-			finalBaseConfig.Domain = def.Input.Value()
+			val := def.Input.Value()
+			if val == "" {
+				val = def.Default
+			}
+			finalBaseConfig.Domain = val
 		}
 	}
 	m.finalBaseConfig = &finalBaseConfig

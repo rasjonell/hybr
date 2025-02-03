@@ -1,7 +1,8 @@
 [
   {
-    "name": "tt-rss",
+    "name": "rss",
     "description": "Tiny Tiny RSS - Self-hosted news feed aggregator",
+    "subDomain": true,
     "installCommand": "docker compose up -d",
     "variables": {
       ".env.templ": [

@@ -16,10 +16,11 @@ var (
 
 type Service struct {
 	Name           string                `json:"name"`
-	Description    string                `json:"description"`
-	InstallCommand string                `json:"installCommand"`
 	Templates      []string              `json:"templates"`
 	Variables      map[string][]Variable `json:"variables"`
+	SubDomain      bool                  `json:"subDomain"`
+	Description    string                `json:"description"`
+	InstallCommand string                `json:"installCommand"`
 }
 
 type Variable struct {
@@ -34,6 +35,7 @@ type Template struct {
 }
 
 type SelectedServiceModel struct {
+	SubDomain      bool
 	ServiceName    string
 	InstallCommand string
 	Variables      map[string][]*VariableDefinition

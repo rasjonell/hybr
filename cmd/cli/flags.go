@@ -5,9 +5,10 @@ import (
 )
 
 type Flags struct {
+	isBaseConfigComplete bool
+	forceNoSSL           bool
 	email                string
 	domain               string
-	isBaseConfigComplete bool
 
 	forceResetTemplates bool
 }
@@ -22,6 +23,8 @@ const (
 func init() {
 	flag.BoolVar(&flags.forceResetTemplates, "f", false, "Reset default templates")
 	flag.BoolVar(&flags.forceResetTemplates, "forceDefault", false, "Reset default templates")
+
+	flag.BoolVar(&flags.forceNoSSL, "no-ssl", false, "Don't use SSL")
 
 	flag.StringVar(&flags.domain, "d", "", DomainDescription)
 	flag.StringVar(&flags.domain, "domain", "", DomainDescription)
