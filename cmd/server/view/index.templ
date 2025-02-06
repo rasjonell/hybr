@@ -38,22 +38,13 @@ templ Index() {
 		<!-- Main Content -->
 		<div class="flex-1 p-8">
 			<h2 class="text-4xl mb-6">Dashboard</h2>
-			<div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
-				<!-- Usages -->
-				@components.Usage("CPU Usage", 65)
-				@components.Usage("Memory Usage", 45)
-				@components.Usage("Disk Usage", 20)
-				<!-- Services -->
-				@components.Info("Active Services", installedServices)
-			</div>
+			<!-- Usages -->
+			@components.Usages()
+			@components.Info("Active Services", installedServices)
 		</div>
 	</div>
 	<script>
 document.addEventListener('DOMContentLoaded', function() {
-    const servicesToggle = document.getElementById('servicesToggle');
-    const servicesSubmenu = document.getElementById('servicesSubmenu');
-    const servicesArrow = document.getElementById('servicesArrow');
-
     servicesToggle.addEventListener('click', function() {
         servicesSubmenu.classList.toggle('hidden');
         servicesArrow.textContent = servicesSubmenu.classList.contains('hidden') ? '▼' : '▲';

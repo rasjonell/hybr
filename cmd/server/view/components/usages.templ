@@ -1,0 +1,36 @@
+package components
+
+import (
+    "fmt"
+    "strconv"
+    )
+
+func getProgressStyle(usage int) string {
+  return fmt.Sprintf("width: %d%%", usage)
+}
+
+templ Usage(title string, usage int) {
+  <h3 class="text-2xl mb-2">{ title }</h3>
+  <div class="h-4 bg-gray-700 rounded">
+    <div class="h-full bg-green-400 rounded" style={ getProgressStyle(usage) }></div>
+  </div>
+  <p class="mt-2">{ strconv.Itoa(usage) }%</p>
+}
+
+templ Usages() {
+  <div
+    hx-ext="sse"
+    sse-connect="/usage"
+    class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6 mb-6"
+  >
+    <div class="bg-gray-900 p-4 border-2 border-green-400" sse-swap="cpu">
+      @Usage("CPU usage", 0)
+    </div>
+    <div class="bg-gray-900 p-4 border-2 border-green-400" sse-swap="ram">
+      @Usage("Memory usage", 0)
+    </div>
+    <div class="bg-gray-900 p-4 border-2 border-green-400" sse-swap="disk">
+      @Usage("Disk usage", 0)
+    </div>
+  </div>
+}
