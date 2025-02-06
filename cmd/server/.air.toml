@@ -6,7 +6,7 @@ tmp_dir = "bin"
 [build]
   bin = "./bin/main"
   cmd = "templ generate && npm run build && go build -o ./bin/main ."
-  delay = 1000
+  delay = 500
   exclude_dir = ["static", "node_modules"]
   exclude_regex = [".*_templ.go"]
   exclude_unchanged = false
@@ -29,3 +29,12 @@ tmp_dir = "bin"
 [misc]
   clean_on_exit = true
 
+[screen]
+  clear_on_rebuild = true
+  keep_scroll = true
+
+# Enable live-reloading on the browser.
+[proxy]
+  enabled = true
+  app_port = 8080
+  proxy_port = 8090
