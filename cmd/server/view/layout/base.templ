@@ -8,8 +8,14 @@ templ Base(children ...templ.Component) {
 			<meta name="viewport" content="width=device-width, initial-scale=1.0"/>
 			<title>Hybr Portal</title>
 			<link href="/static/css/tailwind.css" rel="stylesheet"/>
+			<style>
+        @import url('https://fonts.googleapis.com/css2?family=VT323&display=swap');
+        body {
+          font-family: 'VT323', monospace;
+        }
+      </style>
 		</head>
-		<body>
+		<body class="bg-black text-green-400">
 			for _, child := range children {
 				@child
 			}
