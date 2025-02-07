@@ -1,21 +1,26 @@
 package main
 
 import (
-	"hybr/cmd/server/handlers"
-	"hybr/cmd/server/view"
-	"hybr/cmd/server/view/layout"
+	"hybr/cmd/server/routes"
 	"log"
 	"net/http"
 
-	"github.com/a-h/templ"
+	"github.com/gorilla/mux"
 )
 
 func main() {
+	router := mux.NewRouter()
+
 	fs := http.FileServer(http.Dir("./static"))
-	http.Handle("/static/", http.StripPrefix("/static/", fs))
+	router.PathPrefix("/static").Handler(http.StripPrefix("/static", fs))
 
-	http.HandleFunc("/usage", handlers.UsageSSE)
-	http.Handle("/", templ.Handler(layout.Base(view.Index())))
+	routes.InitHomeRouter(
+		router.PathPrefix("/").Subrouter(),
+	)
 
-	log.Fatal(http.ListenAndServe(":8080", nil))
+	routes.InitServicesRouter(
+		router.PathPrefix("/services").Subrouter(),
+	)
+
+	log.Fatal(http.ListenAndServe(":8080", router))
 }
