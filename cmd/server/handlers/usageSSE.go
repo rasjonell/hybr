@@ -11,7 +11,6 @@ import (
 )
 
 func UsageSSE(w http.ResponseWriter, r *http.Request) {
-	fmt.Println("Connected?")
 	rc, doneChan := utils.SetupSSE(w, r)
 
 	cpuChan := make(chan int)
@@ -25,13 +24,10 @@ func UsageSSE(w http.ResponseWriter, r *http.Request) {
 	for {
 		select {
 		case cpu := <-cpuChan:
-			fmt.Printf("CPU usage: %d%%\n", cpu)
 			sendSSE(w, buildEvent(cpu, "CPU Usage", "cpu"), rc)
 		case ram := <-ramChan:
-			fmt.Printf("RAM usage: %d%%\n", ram)
 			sendSSE(w, buildEvent(ram, "Memory Usage", "ram"), rc)
 		case disk := <-diskChan:
-			fmt.Printf("Disk usage: %d%%\n", disk)
 			sendSSE(w, buildEvent(disk, "Disk Usage", "disk"), rc)
 		}
 	}

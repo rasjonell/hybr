@@ -65,10 +65,6 @@ func MonitorCPU(doneChan <-chan struct{}, cpuChan chan<- int) {
 			totalDiff := total - prevTotal
 			idleDiff := idle - prevIdle
 
-			if totalDiff == 0 {
-				continue
-			}
-
 			cpuUsage := int(100 * (totalDiff - idleDiff) / totalDiff)
 			cpuChan <- cpuUsage
 
