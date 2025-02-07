@@ -5,7 +5,7 @@ import (
 	"fmt"
 	"hybr/cmd/server/utils"
 	"hybr/cmd/server/view/components"
-	"hybr/internal/services/system"
+	"hybr/internal/system"
 	"net/http"
 	"strings"
 )
