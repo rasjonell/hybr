@@ -1,5 +1,9 @@
 package layout
 
+import "hybr/internal/services"
+
+var installedServices []string = services.GetInstalledServices()
+
 templ Base(children ...templ.Component) {
 	<!DOCTYPE html>
 	<html lang="en">
@@ -16,11 +20,48 @@ templ Base(children ...templ.Component) {
       </style>
 		</head>
 		<body class="bg-black text-green-400">
-			for _, child := range children {
-				@child
-			}
-			<script src="https://unpkg.com/htmx.org@1.9.10"></script>
-			<script src="https://unpkg.com/htmx.org@1.9.12/dist/ext/sse.js"></script>
+			<div class="flex h-screen">
+				<!-- Sidebar -->
+				<div class="w-64 bg-gray-900 p-4 border-r-2 border-green-400">
+					<h1 class="text-3xl mb-6 text-center">Hybr</h1>
+					<nav>
+						<ul>
+							<li class="mb-4">
+								<a href="/" class="block text-2xl p-2 hover:bg-green-400 hover:text-black transition duration-200">Home</a>
+							</li>
+							<li class="mb-4">
+								<button id="servicesToggle" class="w-full text-left text-2xl p-2 hover:bg-green-400 hover:text-black transition duration-200 flex justify-between items-center cursor-pointer">
+									Services
+									<span id="servicesArrow">▲</span>
+								</button>
+								<ul id="servicesSubmenu" class="ml-4 mt-2">
+									for _, service := range installedServices {
+										<li>
+											<a href={ templ.URL("/services/" + service) } class="block p-2 text-xl hover:bg-green-400 hover:text-black transition duration-200">
+												{ service }
+											</a>
+										</li>
+									}
+								</ul>
+							</li>
+						</ul>
+					</nav>
+				</div>
+				<!-- Main Content -->
+				for _, child := range children {
+					@child
+				}
+				<script>
+        document.addEventListener('DOMContentLoaded', function() {
+            servicesToggle.addEventListener('click', function() {
+                servicesSubmenu.classList.toggle('hidden');
+                servicesArrow.textContent = servicesSubmenu.classList.contains('hidden') ? '▼' : '▲';
+            });
+        });
+        </script>
+				<script src="https://unpkg.com/htmx.org@1.9.10"></script>
+				<script src="https://unpkg.com/htmx.org@1.9.12/dist/ext/sse.js"></script>
+			</div>
 		</body>
 	</html>
 }
