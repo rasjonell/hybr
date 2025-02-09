@@ -18,7 +18,6 @@ func InitServicesRouter(router *mux.Router) {
 }
 
 func HandleServicePage(w http.ResponseWriter, r *http.Request) {
-
 	tab := 0
 	if queryTab, err := strconv.Atoi(r.URL.Query().Get("tab")); err == nil &&
 		queryTab >= 0 && queryTab <= 2 {

@@ -3,7 +3,11 @@ package view
 import (
 	"fmt"
 	"hybr/cmd/server/view/components"
+	"hybr/internal/services"
+	"time"
 )
+
+var registry = services.GetRegistry()
 
 func getClass(tab, activeTab int) string {
 	defaultClass := "bg-gray-900 p-4 border-2 border-green-400 col-span-full w-1/3 text-center"
@@ -15,12 +19,31 @@ func getClass(tab, activeTab int) string {
 
 var tabs = [...]string{"Info", "Components", "Logs"}
 
-func CurrentTabContent(activeTab int) templ.Component {
+func CurrentTabContent(serviceName string, activeTab int) templ.Component {
+	installation, exists := registry.GetInstallation(serviceName)
+	if !exists {
+		return components.Info("Unknown Service", []string{})
+	}
+
 	switch activeTab {
 	case 0:
-		return components.Info(tabs[activeTab], []string{"info 1", "info 2"})
+		return components.Info(tabs[activeTab], []string{
+			"Name: " + installation.Name,
+			"Status: " + installation.Status,
+			"Global URL: " + installation.URL,
+			"Local URL: localhost:" + installation.Port,
+			"Install Date: " + installation.InstallDate.Format(time.RFC850),
+			"Last Start Date: " + installation.LastStartTime.Format(time.RFC850),
+		})
+
 	case 1:
-		return components.Info(tabs[activeTab], []string{"docker", "postgres", "updater"})
+		comps := []string{}
+		for _, comp := range installation.Components {
+			comps = append(comps, fmt.Sprintf("%s:%s - %s", comp.Name, comp.Version, comp.Status))
+		}
+
+		return components.Info(tabs[activeTab], comps)
+
 	case 2:
 		return components.Info(tabs[activeTab], []string{"log 1", "log 2"})
 	}
@@ -38,6 +61,6 @@ templ Service(serviceName string, activeTab int) {
 				</a>
 			}
 		</div>
-		@CurrentTabContent(activeTab)
+		@CurrentTabContent(serviceName, activeTab)
 	</div>
 }
