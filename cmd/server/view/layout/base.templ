@@ -39,6 +39,11 @@ templ Base(children ...templ.Component) {
 							Home
 						</a>
 						<div class="my-4 bg-gray-200 h-[1px]"></div>
+						<p
+							class="block py-2.5 px-4 rounded font-bold"
+						>
+							Services
+						</p>
 						for _, service := range installedServices {
 							<a
 								key={ service }
