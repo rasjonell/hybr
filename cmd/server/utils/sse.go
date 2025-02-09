@@ -1,6 +1,9 @@
 package utils
 
-import "net/http"
+import (
+	"fmt"
+	"net/http"
+)
 
 func SetupSSE(w http.ResponseWriter, r *http.Request) (*http.ResponseController, <-chan struct{}) {
 	// Set http headers required for SSE
@@ -15,4 +18,16 @@ func SetupSSE(w http.ResponseWriter, r *http.Request) (*http.ResponseController,
 	rc := http.NewResponseController(w)
 
 	return rc, doneChan
+}
+
+func SendSSE(w http.ResponseWriter, msg string, rc *http.ResponseController) {
+	_, err := fmt.Fprint(w, msg)
+	if err != nil {
+		return
+	}
+
+	err = rc.Flush()
+	if err != nil {
+		return
+	}
 }

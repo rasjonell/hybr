@@ -18,14 +18,14 @@ import (
 func InitHomeRouter(router *mux.Router) {
 	router.
 		Path("/usage").
-		HandlerFunc(HandleUsage)
+		HandlerFunc(HandleUsageSSE)
 
 	router.
 		Path("/").
 		Handler(templ.Handler(layout.Base(view.Index())))
 }
 
-func HandleUsage(w http.ResponseWriter, r *http.Request) {
+func HandleUsageSSE(w http.ResponseWriter, r *http.Request) {
 	rc, doneChan := utils.SetupSSE(w, r)
 
 	cpuChan := make(chan int)
@@ -38,29 +38,19 @@ func HandleUsage(w http.ResponseWriter, r *http.Request) {
 
 	for {
 		select {
+		case <-doneChan:
+			return
 		case cpu := <-cpuChan:
-			sendSSE(w, buildEvent(cpu, "CPU Usage", "cpu"), rc)
+			utils.SendSSE(w, buildUsageEvent(cpu, "CPU Usage", "cpu"), rc)
 		case ram := <-ramChan:
-			sendSSE(w, buildEvent(ram, "Memory Usage", "ram"), rc)
+			utils.SendSSE(w, buildUsageEvent(ram, "Memory Usage", "ram"), rc)
 		case disk := <-diskChan:
-			sendSSE(w, buildEvent(disk, "Disk Usage", "disk"), rc)
+			utils.SendSSE(w, buildUsageEvent(disk, "Disk Usage", "disk"), rc)
 		}
 	}
 }
 
-func sendSSE(w http.ResponseWriter, msg string, rc *http.ResponseController) {
-	_, err := fmt.Fprint(w, msg)
-	if err != nil {
-		return
-	}
-
-	err = rc.Flush()
-	if err != nil {
-		return
-	}
-}
-
-func buildEvent(usage int, title, event string) string {
+func buildUsageEvent(usage int, title, event string) string {
 	var buf strings.Builder
 	_ = components.Usage(title, usage).Render(context.Background(), &buf)
 
