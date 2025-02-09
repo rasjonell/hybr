@@ -1,0 +1,41 @@
+package components
+
+templ Log(log string) {
+	<p class="mb-1">
+		{ log }
+	</p>
+}
+
+templ Logs(serviceName string) {
+	<div>
+		<h2 class="text-2xl font-semibold mb-4 text-gray-800">{ serviceName } Logs</h2>
+		<div
+			class="overflow-y-auto mb-4 bg-gray-100 p-4 rounded-md font-mono text-sm"
+			style="height: calc(100vh - 20rem)"
+			hx-ext="sse"
+			id="log-list"
+			hx-swap="beforeend"
+			sse-swap="log"
+			sse-connect={ "/services/" + serviceName + "/logs" }
+		></div>
+		<div class="flex justify-end">
+			<button
+				class="px-4 py-2 bg-red-500 text-white rounded-md hover:bg-red-600 transition duration-200"
+				onclick="clearLogs()"
+			>
+				Clear Logs
+			</button>
+		</div>
+	</div>
+	<script>
+    function clearLogs() {
+      const logs = document.getElementById("log-list");
+      logs.innerHTML = "";
+    }
+
+    document.body.addEventListener('htmx:sseMessage', function () {
+      const logs = document.getElementById("log-list");
+      logs.scrollTo(0, logs.scrollHeight)
+    })
+  </script>
+}
