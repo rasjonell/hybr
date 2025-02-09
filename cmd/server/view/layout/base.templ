@@ -13,55 +13,53 @@ templ Base(children ...templ.Component) {
 			<title>Hybr Portal</title>
 			<link href="/static/css/tailwind.css" rel="stylesheet"/>
 			<style>
-        @import url('https://fonts.googleapis.com/css2?family=VT323&display=swap');
+        @import url('https://fonts.googleapis.com/css2?family=Inter:ital,opsz,wght@0,14..32,100..900;1,14..32,100..900&display=swap');
         body {
-          font-family: 'VT323', monospace;
+          font-family: 'Inter', system
         }
       </style>
 		</head>
-		<body class="bg-black text-green-400">
+		<body class="bg-gray-50 text-gray-900">
 			<div class="flex h-screen">
-				<!-- Sidebar -->
-				<div class="w-64 bg-gray-900 p-4 border-r-2 border-green-400">
-					<h1 class="text-3xl mb-6 text-center">Hybr</h1>
+				<!-- SideBar -->
+				<div class="bg-white text-gray-800 w-64 space-y-6 py-7 px-2 absolute inset-y-0 left-0 transform -translate-x-full md:relative md:translate-x-0 transition duration-200 ease-in-out shadow-lg">
+					<a href="/" class="flex items-center space-x-2 px-4">
+						<svg class="w-8 h-8 text-blue-600" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
+							<path d="M3 13h8V3H3v10zm0 8h8v-6H3v6zm10 0h8V11h-8v10zm0-18v6h8V3h-8z" fill="currentColor"></path>
+						</svg>
+						<span class="text-2xl font-extrabold bg-gradient-to-r from-blue-600 to-purple-600 text-transparent bg-clip-text">
+							Hybr
+						</span>
+					</a>
 					<nav>
-						<ul>
-							<li class="mb-4">
-								<a href="/" class="block text-2xl p-2 hover:bg-green-400 hover:text-black transition duration-200">Home</a>
-							</li>
-							<li class="mb-4">
-								<button id="servicesToggle" class="w-full text-left text-2xl p-2 hover:bg-green-400 hover:text-black transition duration-200 flex justify-between items-center cursor-pointer">
-									Services
-									<span id="servicesArrow">▲</span>
-								</button>
-								<ul id="servicesSubmenu" class="ml-4 mt-2">
-									for _, service := range installedServices {
-										<li>
-											<a href={ templ.URL("/services/" + service) } class="block p-2 text-xl hover:bg-green-400 hover:text-black transition duration-200">
-												{ service }
-											</a>
-										</li>
-									}
-								</ul>
-							</li>
-						</ul>
+						<a
+							href="/"
+							class="block py-2.5 px-4 rounded transition duration-200 hover:bg-gray-100 hover:text-blue-600"
+						>
+							Home
+						</a>
+						<div class="my-4 bg-gray-200 h-[1px]"></div>
+						for _, service := range installedServices {
+							<a
+								key={ service }
+								href={ templ.URL("/services/" + service) }
+								class="block py-2.5 px-4 rounded transition duration-200 hover:bg-gray-100 hover:text-blue-600"
+							>
+								{ service }
+							</a>
+						}
 					</nav>
 				</div>
-				<!-- Main Content -->
-				for _, child := range children {
-					@child
-				}
-				<script>
-        document.addEventListener('DOMContentLoaded', function() {
-            servicesToggle.addEventListener('click', function() {
-                servicesSubmenu.classList.toggle('hidden');
-                servicesArrow.textContent = servicesSubmenu.classList.contains('hidden') ? '▼' : '▲';
-            });
-        });
-        </script>
-				<script src="https://unpkg.com/htmx.org@2.0.4" integrity="sha384-HGfztofotfshcF7+8n44JQL2oJmowVChPTg48S+jvZoztPfvwD79OC/LTtG6dMp+" crossorigin="anonymous"></script>
-				<script src="https://unpkg.com/htmx-ext-sse@2.2.2/sse.js"></script>
+				<main class="flex-1 overflow-x-hidden overflow-y-auto bg-gray-50 p-6">
+					for _, child := range children {
+						<div class="max-w-7x1 mx-auto">
+							@child
+						</div>
+					}
+				</main>
 			</div>
+			<script src="https://unpkg.com/htmx.org@2.0.4" integrity="sha384-HGfztofotfshcF7+8n44JQL2oJmowVChPTg48S+jvZoztPfvwD79OC/LTtG6dMp+" crossorigin="anonymous"></script>
+			<script src="https://unpkg.com/htmx-ext-sse@2.2.2/sse.js"></script>
 		</body>
 	</html>
 }

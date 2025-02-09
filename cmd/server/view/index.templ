@@ -8,9 +8,6 @@ import (
 var installedService []string = services.GetInstalledServices()
 
 templ Index() {
-	<div class="flex-1 p-8">
-		<h2 class="text-4xl mb-6">Dashboard</h2>
-		@components.Usages()
-		@components.Info("Active Services", installedService)
-	</div>
+	<h1 class="text-3xl font-bold mb-8 text-gray-800">Hybr Dashboard</h1>
+	@components.Usages()
 }
