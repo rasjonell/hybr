@@ -1,121 +1,36 @@
 package services
 
 import (
-	"embed"
 	"encoding/json"
-	"io"
+	"fmt"
+	"hybr/internal/docker"
 	"os"
 	"path/filepath"
 	"sync"
+	"time"
 )
+
+type ServiceInstallation struct {
+	URL           string             `json:"url"`
+	Port          string             `json:"port"`
+	Name          string             `json:"name"`
+	Status        string             `json:"status"`
+	Variables     map[string]string  `json:"variables"`
+	Components    []docker.Component `json:"components"`
+	InstallDate   time.Time          `json:"installDate"`
+	LastStartTime time.Time          `json:"lastStartTime"`
+}
+
+type InstallationRegistry struct {
+	stateFile     string
+	mu            sync.RWMutex
+	installations map[string]*ServiceInstallation
+}
 
 var (
-	registry = make(map[string]Service)
-	mu       sync.RWMutex
+	once                 sync.Once
+	installationRegistry *InstallationRegistry
 )
-
-type Service struct {
-	Name           string                `json:"name"`
-	Templates      []string              `json:"templates"`
-	Variables      map[string][]Variable `json:"variables"`
-	SubDomain      bool                  `json:"subDomain"`
-	Description    string                `json:"description"`
-	InstallCommand string                `json:"installCommand"`
-}
-
-type Variable struct {
-	Name        string `json:"name"`
-	Default     string `json:"default"`
-	Description string `json:"description"`
-}
-
-type Template struct {
-	SourcePath string `json:"sourcePath"`
-	TargetName string `json:"targetName"`
-}
-
-type SelectedServiceModel struct {
-	SubDomain      bool
-	ServiceName    string
-	InstallCommand string
-	Variables      map[string][]*VariableDefinition
-}
-
-type VariableDefinition struct {
-	Key   string
-	Value string
-}
-
-func register(s Service) {
-	mu.Lock()
-	defer mu.Unlock()
-
-	registry[s.Name] = s
-}
-
-//go:embed templates/services.json
-var defaultJsonData []byte
-
-//go:embed templates/**/*
-var templatesFS embed.FS
-
-func getServices() []Service {
-	var err error = nil
-	var services []Service
-
-	servicesPath := filepath.Join(getWorkingDirectory(), "services")
-	destPath := filepath.Join(getWorkingDirectory(), "services.json")
-
-	_, err = os.Stat(destPath)
-	if err == nil {
-		data, err := os.ReadFile(destPath)
-		if err != nil {
-			panic("Unable To Read services.json")
-		}
-
-		if err := json.Unmarshal(data, &services); err != nil {
-			panic(err)
-		}
-	}
-
-	if os.IsNotExist(err) {
-		if err := os.WriteFile(destPath, defaultJsonData, 0644); err != nil {
-			panic(err)
-		}
-
-		if err := json.Unmarshal(defaultJsonData, &services); err != nil {
-			panic(err)
-		}
-
-		for _, s := range services {
-			tPath := filepath.Join(servicesPath, s.Name, "templates")
-			if err := os.MkdirAll(tPath, 0755); err != nil {
-				panic(err)
-			}
-
-			for _, templName := range s.Templates {
-				sourceFile, err := templatesFS.Open(filepath.Join("templates", s.Name, templName))
-				if err != nil {
-					panic(err)
-				}
-				defer sourceFile.Close()
-
-				destFile, err := os.Create(filepath.Join(tPath, templName))
-				if err != nil {
-					panic(err)
-				}
-				defer destFile.Close()
-
-				_, err = io.Copy(destFile, sourceFile)
-				if err != nil {
-					panic(err)
-				}
-			}
-		}
-	}
-
-	return services
-}
 
 func InitRegistry(forceResetTemplates bool) {
 	if forceResetTemplates {
@@ -128,4 +43,109 @@ func InitRegistry(forceResetTemplates bool) {
 	for _, service := range services {
 		register(service)
 	}
+}
+
+func GetRegistry() *InstallationRegistry {
+	once.Do(func() {
+		installationRegistry = &InstallationRegistry{
+			stateFile:     filepath.Join(getWorkingDirectory(), "installations.json"),
+			installations: make(map[string]*ServiceInstallation),
+		}
+		installationRegistry.load()
+	})
+
+	return installationRegistry
+}
+
+func (r *InstallationRegistry) load() error {
+	r.mu.Lock()
+	defer r.mu.Unlock()
+
+	data, err := os.ReadFile(r.stateFile)
+	if os.IsNotExist(err) {
+		return nil
+	}
+	if err != nil {
+		return fmt.Errorf("Failed to read installation registry: %w", err)
+	}
+
+	return json.Unmarshal(data, &r.installations)
+}
+
+func (r *InstallationRegistry) save() error {
+	r.mu.Lock()
+	defer r.mu.Unlock()
+
+	data, err := json.MarshalIndent(r.installations, "", " ")
+	if err != nil {
+		return fmt.Errorf("Failed to marshal installation registry: %w", err)
+	}
+
+	return os.WriteFile(r.stateFile, data, 0644)
+}
+
+func (r *InstallationRegistry) AddInstallation(service *ServiceInstallation) error {
+	r.mu.Lock()
+	if service.Status == "running" {
+		service.LastStartTime = time.Now()
+	}
+	r.installations[service.Name] = service
+	r.mu.Unlock()
+
+	return r.save()
+}
+
+func (r *InstallationRegistry) GetInstallation(name string) (*ServiceInstallation, bool) {
+	r.mu.RLock()
+	defer r.mu.RUnlock()
+
+	service, exists := r.installations[name]
+	return service, exists
+}
+
+func (r *InstallationRegistry) UpdateStatus(name, status string) error {
+	r.mu.Lock()
+	if service, exists := r.installations[name]; exists {
+		service.Status = status
+		if status == "running" {
+			service.LastStartTime = time.Now()
+		}
+	}
+	r.mu.Unlock()
+
+	return r.save()
+}
+
+func (r *InstallationRegistry) UpdateComponent(name string, component docker.Component) error {
+	r.mu.Lock()
+	if service, exists := r.installations[name]; exists {
+		for i, comp := range service.Components {
+			if comp.Name == name {
+				service.Components[i] = comp
+				break
+			}
+		}
+	}
+	r.mu.Unlock()
+
+	return r.save()
+}
+
+func (r *InstallationRegistry) ListInstallations() []*ServiceInstallation {
+	r.mu.RLock()
+	defer r.mu.RUnlock()
+
+	services := make([]*ServiceInstallation, 0, len(r.installations))
+	for _, service := range r.installations {
+		services = append(services, service)
+	}
+	return services
+}
+
+func (r *InstallationRegistry) RemoveInstalltion(name string) error {
+	r.mu.Lock()
+	delete(r.installations, name)
+	r.mu.Unlock()
+
+	return r.save()
 }
