@@ -22,7 +22,6 @@ type HybrService interface {
 	GetName() string
 	GetDescription() string
 	IsSubDomain() bool
-	GetInstallCommand() string
 	GetTemplates() []string
 	GetVariables() map[string][]*VariableDefinition
 	GetStatus() string
@@ -34,12 +33,11 @@ type HybrService interface {
 }
 
 type serviceImpl struct {
-	Name           string                           `json:"name"`
-	Description    string                           `json:"description"`
-	SubDomain      bool                             `json:"subDomain"`
-	InstallCommand string                           `json:"installCommand"`
-	Templates      []string                         `json:"templates"`
-	Variables      map[string][]*VariableDefinition `json:"variables"`
+	Name        string                           `json:"name"`
+	Description string                           `json:"description"`
+	SubDomain   bool                             `json:"subDomain"`
+	Templates   []string                         `json:"templates"`
+	Variables   map[string][]*VariableDefinition `json:"variables"`
 
 	Status        string
 	Port          string
@@ -69,10 +67,6 @@ func (s *serviceImpl) GetDescription() string {
 
 func (s *serviceImpl) IsSubDomain() bool {
 	return s.SubDomain
-}
-
-func (s *serviceImpl) GetInstallCommand() string {
-	return s.InstallCommand
 }
 
 func (s *serviceImpl) GetTemplates() []string {
@@ -125,7 +119,7 @@ var defaultJsonData []byte
 //go:embed templates/**/*
 var templatesFS embed.FS
 
-func getServices() []*serviceImpl {
+func initializeServices() []*serviceImpl {
 	var err error = nil
 	var services []*serviceImpl
 

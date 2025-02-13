@@ -81,7 +81,7 @@ func InstallServices(selected []HybrService, bc nginx.NginxConfig) (err error) {
 		}
 		installation.Components = comps
 
-		if err := runInstallCommand(service, installation); err != nil {
+		if err := runInstallCommand(service.GetName(), installation); err != nil {
 			installation.Status = "failed"
 			ir.AddInstallation(installation)
 			return err
@@ -103,6 +103,23 @@ func InstallServices(selected []HybrService, bc nginx.NginxConfig) (err error) {
 	}
 
 	return
+}
+
+func RestartService(serviceName string) error {
+	serviceDir := filepath.Join(getWorkingDirectory(), "services", serviceName)
+	cmd := exec.Command("sh", "-c", "docker compose down -v")
+	cmd.Dir = serviceDir
+	if err := nginx.PipeCmdToStdout(cmd, "docker"); err != nil {
+		return err
+	}
+
+	cmd = exec.Command("sh", "-c", "docker compose up -d")
+	cmd.Dir = serviceDir
+	if err := nginx.PipeCmdToStdout(cmd, "docker"); err != nil {
+		return err
+	}
+
+	return nil
 }
 
 func installTemplates(service HybrService, serviceName string) (string, error) {
@@ -148,17 +165,50 @@ func installTemplates(service HybrService, serviceName string) (string, error) {
 	return port, err
 }
 
-func runInstallCommand(service HybrService, installation *serviceImpl) error {
-	serviceDir := filepath.Join(getWorkingDirectory(), "services", service.GetName())
-	if service.GetInstallCommand() == "" {
-		return fmt.Errorf("Service %s doesn't have an `installCommand`", service.GetName())
-	}
+func reinstallTemplates(service HybrService, serviceName string) error {
+	serviceDir := filepath.Join(getWorkingDirectory(), "services", serviceName)
+	servicePath := filepath.Join(serviceDir, "templates")
+	return filepath.Walk(servicePath, func(path string, info os.FileInfo, err error) error {
+		if err != nil {
+			return err
+		}
 
-	cmd := exec.Command("sh", "-c", service.GetInstallCommand())
+		if info.IsDir() || filepath.Ext(path) != ".templ" {
+			return nil
+		}
+
+		filename := strings.TrimSuffix(filepath.Base(path), ".templ")
+		varDef, exists := service.GetVariables()[filename]
+
+		tmpl, err := template.ParseFiles(path)
+		if err != nil {
+			return fmt.Errorf("Unable to parse template %s: %w", filename, err)
+		}
+
+		outputPath := filepath.Join(serviceDir, filename)
+		out, err := os.Create(outputPath)
+		if err != nil {
+			return fmt.Errorf("Unable to create file: %w", err)
+		}
+		defer out.Close()
+
+		if !exists {
+			err = tmpl.Execute(out, nil)
+		} else {
+			err = tmpl.Execute(out, buildTemplateData(varDef))
+		}
+
+		return nil
+	})
+}
+
+func runInstallCommand(serviceName string, installation *serviceImpl) error {
+	serviceDir := filepath.Join(getWorkingDirectory(), "services", serviceName)
+	cmd := exec.Command("sh", "-c", "docker compose up -d")
 	cmd.Dir = serviceDir
 
-	if err := nginx.PipeCmdToStdout(cmd, service.GetName()); err != nil {
-		return fmt.Errorf("Unable to install %s Service", service.GetName())
+	if err := nginx.PipeCmdToStdout(cmd, serviceName); err != nil {
+		return fmt.Errorf("Unable to install %s Service", serviceName)
 	}
 
 	for i := range installation.Components {

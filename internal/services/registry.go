@@ -27,7 +27,7 @@ func InitRegistry(forceResetTemplates bool) {
 	}
 
 	initWorkingDirectory()
-	services := getServices()
+	services := initializeServices()
 
 	for _, service := range services {
 		register(service)
@@ -105,12 +105,12 @@ func (r *InstallationRegistry) UpdateStatus(name, status string) error {
 	return r.save()
 }
 
-func (r *InstallationRegistry) UpdateComponent(name string, component docker.Component) error {
+func (r *InstallationRegistry) UpdateComponent(name string, component *docker.Component) error {
 	r.mu.Lock()
 	if service, exists := r.installations[name]; exists {
-		for i, comp := range service.Components {
-			if comp.Name == name {
-				service.Components[i] = comp
+		for _, comp := range service.Components {
+			if comp.Name == component.Name {
+				comp = component
 				break
 			}
 		}

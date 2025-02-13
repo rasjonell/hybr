@@ -1,7 +1,9 @@
 # To Do
 
 - [ ] Service Edit
-    - [ ] View Vars / Edit Vars (trigger restart)
+    - [x] View Vars / Edit Vars (trigger restart)
+    - [ ] Show Alerts on actions
+    - [ ] Subsribe to Service Status/Component Statuses
     - [ ] View Config(service.json) / Edit
     - [ ] Uninstall(Requires service stop)
     - [ ] Restart(detect active log streaming stop, restart, continue)

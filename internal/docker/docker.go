@@ -3,7 +3,6 @@ package docker
 import (
 	"os"
 	"path/filepath"
-	"strings"
 
 	"gopkg.in/yaml.v3"
 )
@@ -41,13 +40,4 @@ func DetectComponents(serviceDir string) ([]*Component, error) {
 	}
 
 	return components, nil
-}
-
-func parseImageVersion(image string) string {
-	parts := strings.Split(image, ":")
-	if len(parts) > 1 {
-		return parts[1]
-	}
-
-	return "latest"
 }

@@ -75,7 +75,7 @@ func HandleServiceEditAction(w http.ResponseWriter, r *http.Request) {
 		}
 	}
 
-	// services.UpdateVars(serviceName, vars)
+	go services.UpdateVars(serviceName, vars)
 
 	layout.Base(view.Service(serviceName, 0, false)).Render(r.Context(), w)
 }
