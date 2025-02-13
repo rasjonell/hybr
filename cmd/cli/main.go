@@ -19,15 +19,11 @@ func main() {
 		os.Exit(1)
 	}
 
-	if len(model.finalServices) == 0 {
-		os.Exit(0)
-	}
-
 	if err := nginx.Init(model.finalBaseConfig, flags.forceResetTemplates, flags.forceNoSSL); err != nil {
 		panic(err)
 	}
 
-	if err := services.InstallServices(model.finalServices, model.finalBaseConfig); err != nil {
+	if err := services.InstallServices(model.getFinalServices(), model.finalBaseConfig); err != nil {
 		panic(err)
 	}
 }

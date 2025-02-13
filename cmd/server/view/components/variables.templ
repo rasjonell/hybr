@@ -1,0 +1,80 @@
+package components
+
+import (
+	"fmt"
+	"hybr/cmd/server/view/icons"
+	"hybr/internal/services"
+)
+
+templ title(fileName string) {
+	<div
+		class="flex items-center w-full text-left transition duration-200"
+	>
+		<span class="font-semibold ml-2 py-2 px-3 bg-gray-100 rounded-md">{ fileName }</span>
+	</div>
+}
+
+templ Variables(serviceName string, vars map[string][]*services.VariableDefinition) {
+	<div>
+		<div class="flex items-center mb-4 justify-between">
+			<h2 class="text-3xl font-semibold text-gray-800">Variables</h2>
+			<a href={ templ.URL("/services/" + serviceName + "/edit") } class="bg-blue-600 p-3 rounded-md cursor-pointer" title="Edit Variables">
+				@icons.Edit("w-7 h-7")
+			</a>
+		</div>
+		for fileName, variables := range vars {
+			<div class="mb-4">
+				@title(fileName)
+				<div class="mt-2 pl-4">
+					for _, vars := range variables {
+						<div class="flex justify-between py-2 border-b border-gray-200 items-center">
+							<div class="flex flex-col">
+								<span class="font-medium text-gray-700">{ vars.Name }</span>
+								<span class="text-sm text-gray-600 italic">{ vars.Description }</span>
+							</div>
+							<span class="text-gray-600 text-lg">{ vars.Value }</span>
+						</div>
+					}
+				</div>
+			</div>
+		}
+	</div>
+}
+
+templ VariablesEdit(serviceName string, vars map[string][]*services.VariableDefinition) {
+	<div>
+		<form method="POST" id="varsForm">
+			<div class="flex items-center mb-4 justify-between">
+				<h2 class="text-3xl font-semibold text-gray-800">Edit Variables</h2>
+				<button type="submit" class="bg-blue-600 p-3 rounded-md cursor-pointer" title="Save Variables">
+					@icons.Save("w-7 h-7 fill-white")
+				</button>
+			</div>
+			for fileName, variables := range vars {
+				<input hidden name="filenames" value={ fileName }/>
+				<div class="mb-4">
+					@title(fileName)
+					<div class="mt-2 pl-4">
+						for _, vars := range variables {
+							<div class="flex justify-between py-2 border-b border-gray-200 items-center">
+								<div class="flex flex-col">
+									<span class="font-medium text-gray-700">{ vars.Name }</span>
+									<span class="text-sm text-gray-600 italic">{ vars.Description }</span>
+								</div>
+								<input
+									value={ vars.Value }
+									placeholder={ vars.Value }
+									name={ fmt.Sprintf("%s-%s", fileName, vars.Name) }
+									class="text-gray-900 text-lg text-right rounded border-gray-200 border-1 px-2 bg-gray-100"
+								/>
+							</div>
+						}
+					</div>
+				</div>
+			}
+		</form>
+	</div>
+	<script>
+    document.querySelector("input").focus()
+  </script>
+}

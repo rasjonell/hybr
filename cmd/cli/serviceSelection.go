@@ -2,6 +2,7 @@ package main
 
 import (
 	"fmt"
+	"hybr/internal/services"
 	"slices"
 	"strings"
 
@@ -31,24 +32,24 @@ func (m *Model) updateServiceSelection(msg tea.Msg) (tea.Model, tea.Cmd) {
 
 		case "left", "h":
 			m.selectedServiceNames = []string{}
-			m.selected = map[string]*ServiceModel{}
+			m.selected = map[string]services.HybrService{}
 
 		case "right", "l":
 			for _, s := range m.services {
-				m.selected[s.Name] = s
-				m.selectedServiceNames = append(m.selectedServiceNames, s.Name)
+				m.selected[s.GetName()] = s
+				m.selectedServiceNames = append(m.selectedServiceNames, s.GetName())
 			}
 
 		case " ":
 			selected := m.services[m.cursor]
-			if _, exists := m.selected[selected.Name]; exists {
-				delete(m.selected, selected.Name)
+			if _, exists := m.selected[selected.GetName()]; exists {
+				delete(m.selected, selected.GetName())
 				m.selectedServiceNames = slices.DeleteFunc(m.selectedServiceNames, func(n string) bool {
-					return n == selected.Name
+					return n == selected.GetName()
 				})
 			} else {
-				m.selected[selected.Name] = selected
-				m.selectedServiceNames = append(m.selectedServiceNames, selected.Name)
+				m.selected[selected.GetName()] = selected
+				m.selectedServiceNames = append(m.selectedServiceNames, selected.GetName())
 			}
 
 		case "enter":
@@ -76,13 +77,13 @@ func (m *Model) viewServiceSelection() string {
 		}
 
 		selectionIndicator := "  [ ]"
-		if _, exists := m.selected[service.Name]; exists {
+		if _, exists := m.selected[service.GetName()]; exists {
 			selectionIndicator = "  [x]"
 		}
 
 		lines = append(lines, fmt.Sprintf(
 			"%s%s %s",
-			cursorIndicator, selectionIndicator, service.Description),
+			cursorIndicator, selectionIndicator, service.GetDescription()),
 		)
 	}
 

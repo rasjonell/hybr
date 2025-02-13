@@ -1,0 +1,18 @@
+package icons
+
+func getClass(success bool) string {
+	defaultClass := "px-2 py-1 rounded-lg capitalize "
+	if success {
+		return defaultClass + "bg-green-200 text-green-800"
+	}
+
+	return defaultClass + "bg-red-200 text-red-800"
+}
+
+templ Chip(text string, success bool) {
+	<span
+		class={ getClass(success) }
+	>
+		{ text }
+	</span>
+}

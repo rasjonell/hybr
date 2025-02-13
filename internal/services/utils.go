@@ -6,11 +6,11 @@ import (
 	"path/filepath"
 )
 
-func GetRegisteredServices() []Service {
+func GetRegisteredServices() []HybrService {
 	mu.RLock()
 	defer mu.RUnlock()
 
-	services := make([]Service, 0, len(registry))
+	services := make([]HybrService, 0, len(registry))
 	for _, s := range registry {
 		services = append(services, s)
 	}
@@ -49,7 +49,7 @@ func GetInstalledServices() []string {
 func findPort(varDef []*VariableDefinition) string {
 	var port string
 	for _, def := range varDef {
-		if def.Key == "PORT" {
+		if def.Name == "PORT" {
 			port = def.Value
 		}
 	}

@@ -1,6 +1,9 @@
 package components
 
-import "strings"
+import (
+	"hybr/cmd/server/view/icons"
+	"strings"
+)
 
 func isURL(key string) bool {
 	return strings.Contains(strings.ToLower(key), "url")
@@ -10,16 +13,27 @@ func getRedirectURL(val string) templ.SafeURL {
 	return templ.SafeURL("http://" + val)
 }
 
+templ val(title string) {
+	<span class="text-gray-600">{ title }</span>
+}
+
+func valueComponent(key, title string) templ.Component {
+	if strings.ToLower(key) == "status" {
+		return icons.Chip(title, title == "running")
+	}
+	return val(title)
+}
+
 templ Info(title string, keys, vals []string) {
 	<div class="space-y-4">
-		<h2 class="text-2xl font-semibold mb-4 text-gray-800">Service Information</h2>
+		<h2 class="text-2xl font-semibold mb-4 text-gray-800">{ title }</h2>
 		for i, key := range keys {
 			<p class="flex justify-between border-b border-gray-200 py-2">
 				<strong class="text-gray-700">{ key }:</strong>
 				if isURL(key) {
 					<a href={ getRedirectURL(vals[i]) } class="text-blue-600 underline" target="_blank">{ vals[i] }</a>
 				} else {
-					<span class="text-gray-600">{ vals[i] }</span>
+					@valueComponent(key, vals[i])
 				}
 			</p>
 		}

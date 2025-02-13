@@ -4,7 +4,6 @@ import (
 	"hybr/internal/nginx"
 	"hybr/internal/services"
 
-	"github.com/charmbracelet/bubbles/textinput"
 	tea "github.com/charmbracelet/bubbletea"
 )
 
@@ -17,35 +16,15 @@ const (
 	StepConfirmation
 )
 
-type final uint8
-
-type Variable struct {
-	Template    string
-	Name        string
-	Default     string
-	Description string
-	Input       textinput.Model
-}
-
-type ServiceModel struct {
-	SubDomain      bool
-	Name           string
-	Description    string
-	InstallCommand string
-	Templates      []string
-	Variables      []*Variable
-}
-
 type Model struct {
 	step Step
 
 	selectedServiceNames []string
-	services             []*ServiceModel
-	selected             map[string]*ServiceModel
-	finalServices        []*services.SelectedServiceModel
+	services             []services.HybrService
+	selected             map[string]services.HybrService
 
-	baseConfigVariables []*Variable
-	finalBaseConfig     *nginx.BaseConfig
+	finalBaseConfig     nginx.NginxConfig
+	baseConfigVariables []*services.VariableDefinition
 
 	cursor             int
 	activeServiceIndex int
@@ -55,38 +34,23 @@ var model *Model
 
 func InitCLI() {
 	registeredServices := services.GetRegisteredServices()
-	modelServices := make([]*ServiceModel, len(registeredServices), cap(registeredServices))
+	focusTaken := false
 
 	for i, s := range registeredServices {
-		templateCount := 0
-		vars := []*Variable{}
-
-		for template, variableDefinitions := range s.Variables {
-			for i, v := range variableDefinitions {
+		for template, variableDefinitions := range s.GetVariables() {
+			for _, v := range variableDefinitions {
 				ti := buildTextInput(v.Default)
-				if i == templateCount && i == 0 {
+				if !focusTaken {
 					ti.Focus()
+					focusTaken = true
 				}
-
-				vars = append(vars, &Variable{
-					Input:       ti,
-					Name:        v.Name,
-					Template:    template,
-					Default:     v.Default,
-					Description: v.Description,
-				})
+				v.Input = ti
+				v.Value = ""
+				v.Template = template
 			}
-			templateCount++
 		}
 
-		modelServices[i] = &ServiceModel{
-			Variables:      vars,
-			Name:           s.Name,
-			SubDomain:      s.SubDomain,
-			Templates:      s.Templates,
-			Description:    s.Description,
-			InstallCommand: s.InstallCommand,
-		}
+		registeredServices[i] = s
 	}
 
 	step := StepBaseConfigInput
@@ -95,10 +59,11 @@ func InitCLI() {
 	}
 
 	model = &Model{
+		cursor:              0,
 		step:                step,
-		services:            modelServices,
+		services:            registeredServices,
 		baseConfigVariables: getBaseConfigVariables(),
-		selected:            make(map[string]*ServiceModel),
+		selected:            make(map[string]services.HybrService),
 	}
 }
 
@@ -150,47 +115,36 @@ func (m *Model) currentServiceName() string {
 	return m.selectedServiceNames[m.activeServiceIndex]
 }
 
-func (m *Model) getCurrentSelectedService() *ServiceModel {
+func (m *Model) getCurrentSelectedService() services.HybrService {
 	return m.selected[m.selectedServiceNames[m.activeServiceIndex]]
 }
 
-func (m *Model) buildFinalServices() {
-	var finalServices []*services.SelectedServiceModel
-	for serviceName, service := range m.selected {
-		variableDefinitions := make(map[string][]*services.VariableDefinition)
+func (m *Model) getCurrentVariables() []*services.VariableDefinition {
+	defs := make([]*services.VariableDefinition, 0)
+	for _, vars := range m.getCurrentSelectedService().GetVariables() {
+		defs = append(defs, vars...)
+	}
+	return defs
+}
 
-		for _, v := range service.Variables {
-			defSlice, exists := variableDefinitions[v.Template]
-			varDef := &services.VariableDefinition{
-				Key:   v.Name,
-				Value: v.Input.Value(),
-			}
-			if exists {
-				variableDefinitions[v.Template] = append(defSlice, varDef)
-			} else {
-				defs := []*services.VariableDefinition{}
-				variableDefinitions[v.Template] = append(defs, varDef)
+func (m *Model) buildFinalServices() {
+	for _, service := range m.selected {
+		for _, vars := range service.GetVariables() {
+			for _, v := range vars {
+				v.Value = v.Input.Value()
 			}
 		}
-
-		finalServices = append(finalServices, &services.SelectedServiceModel{
-			SubDomain:      service.SubDomain,
-			ServiceName:    serviceName,
-			Variables:      variableDefinitions,
-			InstallCommand: service.InstallCommand,
-		})
 	}
-	m.finalServices = finalServices
 
 	if flags.isBaseConfigComplete {
-		m.finalBaseConfig = &nginx.BaseConfig{
+		m.finalBaseConfig = &nginx.ConfigImpl{
 			Email:  flags.email,
 			Domain: flags.domain,
 		}
 		return
 	}
 
-	var finalBaseConfig nginx.BaseConfig
+	var finalBaseConfig nginx.ConfigImpl
 	for _, def := range m.baseConfigVariables {
 		switch def.Name {
 		case "Email":
@@ -208,6 +162,14 @@ func (m *Model) buildFinalServices() {
 		}
 	}
 	m.finalBaseConfig = &finalBaseConfig
+}
+
+func (m *Model) getFinalServices() []services.HybrService {
+	finalServices := make([]services.HybrService, 0)
+	for _, s := range m.selected {
+		finalServices = append(finalServices, s)
+	}
+	return finalServices
 }
 
 func NewProgram() *tea.Program {

@@ -13,7 +13,7 @@ const (
 	SSLDir     = "/etc/letsencrypt/live"
 )
 
-func ObtainSSLCert(config NginxServiceConfig, baseConfig *BaseConfig) error {
+func ObtainSSLCert(config NginxServiceConfig, baseConfig *ConfigImpl) error {
 	if err := checkCertbot(); err != nil {
 		return err
 	}

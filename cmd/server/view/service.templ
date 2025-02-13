@@ -17,9 +17,9 @@ func getClass(tab, activeTab int) string {
 	return defaultClass
 }
 
-var tabs = [...]string{"Info", "Components", "Logs"}
+var tabs = [...]string{"Service Info", "Components", "Variables", "Logs"}
 
-func CurrentTabContent(serviceName string, activeTab int) templ.Component {
+func CurrentTabContent(serviceName string, activeTab int, isEdit bool) templ.Component {
 	installation, exists := registry.GetInstallation(serviceName)
 	if !exists {
 		return components.Info("Unknown Service", []string{}, []string{})
@@ -30,20 +30,29 @@ func CurrentTabContent(serviceName string, activeTab int) templ.Component {
 		return components.Info(
 			tabs[activeTab],
 			[]string{"Name", "Status", "Global URL", "Local URL", "Install Date", "Last Start Date"},
-			[]string{installation.Name, installation.Status, installation.URL, "localhost:" + installation.Port, installation.InstallDate.Format(time.RFC850), installation.LastStartTime.Format(time.RFC850)},
+			[]string{installation.GetName(), installation.GetStatus(), installation.GetURL(), "localhost:" + installation.GetPort(),
+				installation.GetInstallDate().Format(time.RFC850), installation.GetLastStartTime().Format(time.RFC850),
+			},
 		)
 
 	case 1:
-		return components.DockerComponents(installation.Components)
+		return components.DockerComponents(installation.GetComponents())
 
 	case 2:
+		if isEdit {
+			return components.VariablesEdit(serviceName, installation.GetVariables())
+		} else {
+			return components.Variables(serviceName, installation.GetVariables())
+		}
+
+	case 3:
 		return components.Logs(serviceName)
 	}
 
 	return components.Info("Unknown tab", []string{}, []string{})
 }
 
-templ Service(serviceName string, activeTab int) {
+templ Service(serviceName string, activeTab int, isEdit bool) {
 	<h1 class="text-3xl font-bold mb-8 text-gray-800">{ serviceName }</h1>
 	<div class="mb-6 flex space-x-2">
 		for tab, title := range tabs {
@@ -55,5 +64,5 @@ templ Service(serviceName string, activeTab int) {
 			</a>
 		}
 	</div>
-	@CurrentTabContent(serviceName, activeTab)
+	@CurrentTabContent(serviceName, activeTab, isEdit)
 }

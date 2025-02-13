@@ -43,39 +43,36 @@ func buildTemplateData(vars []*VariableDefinition) map[string]string {
 	data := make(map[string]string)
 
 	for _, v := range vars {
-		data[v.Key] = v.Value
+		data[v.Name] = v.Value
 	}
 
 	return data
 }
 
-func InstallServices(selected []*SelectedServiceModel, bc *nginx.BaseConfig) (err error) {
+func InstallServices(selected []HybrService, bc nginx.NginxConfig) (err error) {
 	ir := GetRegistry()
 
 	for _, service := range selected {
-		serviceDir := filepath.Join(getWorkingDirectory(), "services", service.ServiceName)
-		servicePath := filepath.Join(serviceDir, "templates")
+		serviceDir := filepath.Join(getWorkingDirectory(), "services", service.GetName())
 
 		var port string
-		port, err = installTemplates(service, servicePath, serviceDir)
+		port, err = installTemplates(service, service.GetName())
 		if err != nil {
 			return err
 		}
 
-		installation := &ServiceInstallation{
+		installation := &serviceImpl{
 			Port:        port,
 			InstallDate: time.Now(),
 			Status:      "installing",
-			Name:        service.ServiceName,
-			Components:  []docker.Component{},
-			Variables:   make(map[string]string),
-			URL:         nginx.BuildServerName(service.SubDomain, bc.Domain, service.ServiceName),
+			Name:        service.GetName(),
+			Components:  []*docker.Component{},
+			Variables:   make(map[string][]*VariableDefinition),
+			URL:         nginx.BuildServerName(service.IsSubDomain(), bc.GetDomain(), service.GetName()),
 		}
 
-		for _, vars := range service.Variables {
-			for _, v := range vars {
-				installation.Variables[v.Key] = v.Value
-			}
+		for fileName, vars := range service.GetVariables() {
+			installation.Variables[strings.TrimSuffix(fileName, ".templ")] = vars
 		}
 
 		comps, err := docker.DetectComponents(serviceDir)
@@ -84,13 +81,13 @@ func InstallServices(selected []*SelectedServiceModel, bc *nginx.BaseConfig) (er
 		}
 		installation.Components = comps
 
-		if err := runInstallCommand(service, installation, serviceDir); err != nil {
+		if err := runInstallCommand(service, installation); err != nil {
 			installation.Status = "failed"
 			ir.AddInstallation(installation)
 			return err
 		}
 
-		if err := nginx.AddSevice(service.ServiceName, port, service.SubDomain); err != nil {
+		if err := nginx.AddSevice(service.GetName(), port, service.IsSubDomain()); err != nil {
 			installation.Status = "failed"
 			ir.AddInstallation(installation)
 			return err
@@ -101,14 +98,16 @@ func InstallServices(selected []*SelectedServiceModel, bc *nginx.BaseConfig) (er
 			return err
 		}
 
-		fmt.Printf("\n[%s] Is Installed and Nginx Is Configured\n", service.ServiceName)
-		fmt.Printf("[%s] Is Running at %s\n", service.ServiceName, installation.URL)
+		fmt.Printf("\n[%s] Is Installed and Nginx Is Configured\n", service.GetName())
+		fmt.Printf("[%s] Is Running at %s\n", service.GetName(), installation.URL)
 	}
 
 	return
 }
 
-func installTemplates(service *SelectedServiceModel, servicePath, serviceDir string) (string, error) {
+func installTemplates(service HybrService, serviceName string) (string, error) {
+	serviceDir := filepath.Join(getWorkingDirectory(), "services", serviceName)
+	servicePath := filepath.Join(serviceDir, "templates")
 	var port string
 	err := filepath.Walk(servicePath, func(path string, info os.FileInfo, err error) error {
 		if err != nil {
@@ -120,7 +119,7 @@ func installTemplates(service *SelectedServiceModel, servicePath, serviceDir str
 		}
 
 		filename := filepath.Base(path)
-		varDef, exists := service.Variables[filename]
+		varDef, exists := service.GetVariables()[filename]
 
 		tmpl, err := template.ParseFiles(path)
 		if err != nil {
@@ -149,16 +148,17 @@ func installTemplates(service *SelectedServiceModel, servicePath, serviceDir str
 	return port, err
 }
 
-func runInstallCommand(service *SelectedServiceModel, installation *ServiceInstallation, serviceDir string) error {
-	if service.InstallCommand == "" {
-		return fmt.Errorf("Service %s doesn't have an `installCommand`", service.ServiceName)
+func runInstallCommand(service HybrService, installation *serviceImpl) error {
+	serviceDir := filepath.Join(getWorkingDirectory(), "services", service.GetName())
+	if service.GetInstallCommand() == "" {
+		return fmt.Errorf("Service %s doesn't have an `installCommand`", service.GetName())
 	}
 
-	cmd := exec.Command("sh", "-c", service.InstallCommand)
+	cmd := exec.Command("sh", "-c", service.GetInstallCommand())
 	cmd.Dir = serviceDir
 
-	if err := nginx.PipeCmdToStdout(cmd, service.ServiceName); err != nil {
-		return fmt.Errorf("Unable to install %s Service", service.ServiceName)
+	if err := nginx.PipeCmdToStdout(cmd, service.GetName()); err != nil {
+		return fmt.Errorf("Unable to install %s Service", service.GetName())
 	}
 
 	for i := range installation.Components {

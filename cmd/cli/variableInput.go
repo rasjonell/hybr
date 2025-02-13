@@ -8,7 +8,7 @@ import (
 )
 
 func (m *Model) updateVariableInput(msg tea.Msg) (tea.Model, tea.Cmd) {
-	vars := m.getCurrentSelectedService().Variables
+	vars := m.getCurrentVariables()
 
 	cmds := []tea.Cmd{}
 	currentVar := vars[m.cursor]
@@ -49,7 +49,7 @@ func (m *Model) viewVariableInput() string {
 		fmt.Sprintf("Please Insert Variables for %s\n", m.currentServiceName()),
 	}
 
-	for i, v := range m.getCurrentSelectedService().Variables {
+	for i, v := range m.getCurrentVariables() {
 		lines = append(lines, v.Description, fmt.Sprintf(
 			"%d. %s = %s", i+1, v.Name, v.Input.View(),
 		))

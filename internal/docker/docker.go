@@ -14,7 +14,7 @@ type Component struct {
 	Version string `json:"version"`
 }
 
-func DetectComponents(serviceDir string) ([]Component, error) {
+func DetectComponents(serviceDir string) ([]*Component, error) {
 	composer := filepath.Join(serviceDir, "docker-compose.yml")
 	data, err := os.ReadFile(composer)
 	if err != nil {
@@ -31,9 +31,9 @@ func DetectComponents(serviceDir string) ([]Component, error) {
 		return nil, err
 	}
 
-	components := []Component{}
+	components := []*Component{}
 	for name, service := range compose.Service {
-		components = append(components, Component{
+		components = append(components, &Component{
 			Name:    name,
 			Status:  "installing",
 			Version: parseImageVersion(service.Image),

@@ -2,6 +2,7 @@ package main
 
 import (
 	"flag"
+	"hybr/internal/services"
 )
 
 type Flags struct {
@@ -39,9 +40,9 @@ func init() {
 	}
 }
 
-func getBaseConfigVariables() []*Variable {
+func getBaseConfigVariables() []*services.VariableDefinition {
 	focusTaken := false
-	var vars []*Variable
+	var vars []*services.VariableDefinition
 
 	if flags.email == "" {
 		ti := buildTextInput("your@email.com")
@@ -50,7 +51,7 @@ func getBaseConfigVariables() []*Variable {
 			focusTaken = true
 		}
 
-		vars = append(vars, &Variable{
+		vars = append(vars, &services.VariableDefinition{
 			Input:       ti,
 			Name:        "Email",
 			Template:    "base-config",
@@ -66,7 +67,7 @@ func getBaseConfigVariables() []*Variable {
 			focusTaken = true
 		}
 
-		vars = append(vars, &Variable{
+		vars = append(vars, &services.VariableDefinition{
 			Input:       ti,
 			Name:        "Domain",
 			Default:     "localhost",

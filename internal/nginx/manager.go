@@ -7,6 +7,11 @@ import (
 	"path/filepath"
 )
 
+type NginxConfig interface {
+	GetEmail() string
+	GetDomain() string
+}
+
 type NginxServiceConfig struct {
 	SubDomain bool
 	Name      string
@@ -14,9 +19,17 @@ type NginxServiceConfig struct {
 	Domain    string
 }
 
-type BaseConfig struct {
+type ConfigImpl struct {
 	Email  string
 	Domain string
+}
+
+func (b *ConfigImpl) GetEmail() string {
+	return b.Email
+}
+
+func (b *ConfigImpl) GetDomain() string {
+	return b.Domain
 }
 
 const (
@@ -24,12 +37,16 @@ const (
 	ConfDDir = "/etc/nginx/conf.d"
 )
 
-var baseConfig *BaseConfig
+var baseConfig *ConfigImpl
 var forceNoSSL bool
 
-func Init(bc *BaseConfig, forceDefault, noSSL bool) error {
-	baseConfig = bc
+func Init(bc NginxConfig, forceDefault, noSSL bool) error {
+	var ok bool
 	forceNoSSL = noSSL
+	baseConfig, ok = bc.(*ConfigImpl)
+	if !ok {
+		return fmt.Errorf("Invalid Nginx Config type")
+	}
 
 	dirs := []string{ConfDir, ConfDDir}
 	for _, dir := range dirs {

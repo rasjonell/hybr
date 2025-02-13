@@ -10,21 +10,10 @@ import (
 	"time"
 )
 
-type ServiceInstallation struct {
-	URL           string             `json:"url"`
-	Port          string             `json:"port"`
-	Name          string             `json:"name"`
-	Status        string             `json:"status"`
-	Variables     map[string]string  `json:"variables"`
-	Components    []docker.Component `json:"components"`
-	InstallDate   time.Time          `json:"installDate"`
-	LastStartTime time.Time          `json:"lastStartTime"`
-}
-
 type InstallationRegistry struct {
 	stateFile     string
 	mu            sync.RWMutex
-	installations map[string]*ServiceInstallation
+	installations map[string]*serviceImpl
 }
 
 var (
@@ -48,8 +37,8 @@ func InitRegistry(forceResetTemplates bool) {
 func GetRegistry() *InstallationRegistry {
 	once.Do(func() {
 		installationRegistry = &InstallationRegistry{
+			installations: make(map[string]*serviceImpl),
 			stateFile:     filepath.Join(getWorkingDirectory(), "installations.json"),
-			installations: make(map[string]*ServiceInstallation),
 		}
 		installationRegistry.load()
 	})
@@ -84,9 +73,9 @@ func (r *InstallationRegistry) save() error {
 	return os.WriteFile(r.stateFile, data, 0644)
 }
 
-func (r *InstallationRegistry) AddInstallation(service *ServiceInstallation) error {
+func (r *InstallationRegistry) AddInstallation(service *serviceImpl) error {
 	r.mu.Lock()
-	if service.Status == "running" {
+	if service.GetStatus() == "running" {
 		service.LastStartTime = time.Now()
 	}
 	r.installations[service.Name] = service
@@ -95,7 +84,7 @@ func (r *InstallationRegistry) AddInstallation(service *ServiceInstallation) err
 	return r.save()
 }
 
-func (r *InstallationRegistry) GetInstallation(name string) (*ServiceInstallation, bool) {
+func (r *InstallationRegistry) GetInstallation(name string) (HybrService, bool) {
 	r.mu.RLock()
 	defer r.mu.RUnlock()
 
@@ -131,11 +120,11 @@ func (r *InstallationRegistry) UpdateComponent(name string, component docker.Com
 	return r.save()
 }
 
-func (r *InstallationRegistry) ListInstallations() []*ServiceInstallation {
+func (r *InstallationRegistry) ListInstallations() []*serviceImpl {
 	r.mu.RLock()
 	defer r.mu.RUnlock()
 
-	services := make([]*ServiceInstallation, 0, len(r.installations))
+	services := make([]*serviceImpl, 0, len(r.installations))
 	for _, service := range r.installations {
 		services = append(services, service)
 	}
