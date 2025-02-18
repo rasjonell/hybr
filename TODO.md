@@ -1,9 +1,13 @@
 # To Do
 
+- [ ] Real-Time Event Orchestration
+    - [ ] SubscriptionManager
+    - [ ] Refactor real-time monitoring/log services to have a common pub/sub interface
+    - [ ] Add a subscription service to track Status/Component Statuses
+
 - [ ] Service Edit
     - [x] View Vars / Edit Vars (trigger restart)
     - [ ] Show Alerts on actions
-    - [ ] Subsribe to Service Status/Component Statuses
     - [ ] View Config(service.json) / Edit
     - [ ] Uninstall(Requires service stop)
     - [ ] Restart(detect active log streaming stop, restart, continue)
