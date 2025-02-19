@@ -3,19 +3,37 @@ package services
 import (
 	"bufio"
 	"fmt"
+	"hybr/internal/orchestration"
 	"os/exec"
 	"path/filepath"
 )
 
-func FollowLogs(doneChan <-chan struct{}, logChan chan<- string, serviceName string) {
-	defer close(logChan)
+type ServiceLogMonitor struct {
+	ServiceName string
+	EventType   orchestration.EventType
+}
 
+func GetServiceLogEvent(name string) orchestration.EventType {
+	return orchestration.EventType(fmt.Sprintf("%s_service_log_event", name))
+}
+
+func RegisterServiceLogMonitor(name string) {
+	logEventType := GetServiceLogEvent(name)
+
+	subManager := orchestration.GetSubscriptionManager()
+	subManager.RegisterEventSource(logEventType, &ServiceLogMonitor{
+		ServiceName: name,
+		EventType:   logEventType,
+	})
+}
+
+func (m *ServiceLogMonitor) Start(doneChan <-chan struct{}, logChan chan<- *orchestration.EventChannelData) {
 	cmd := exec.Command("docker", "compose", "logs",
 		"-f",
 		"--no-color",
 		"--tail", "10",
 	)
-	cmd.Dir = filepath.Join(getWorkingDirectory(), "services", serviceName)
+	cmd.Dir = filepath.Join(getWorkingDirectory(), "services", m.ServiceName)
 
 	stdout, err := cmd.StdoutPipe()
 	if err != nil {
@@ -37,7 +55,7 @@ func FollowLogs(doneChan <-chan struct{}, logChan chan<- string, serviceName str
 			return
 
 		default:
-			logChan <- scanner.Text()
+			logChan <- orchestration.ToEventData(m.EventType, scanner.Text())
 		}
 	}
 }

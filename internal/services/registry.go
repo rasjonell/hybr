@@ -41,6 +41,9 @@ func GetRegistry() *InstallationRegistry {
 			stateFile:     filepath.Join(getWorkingDirectory(), "installations.json"),
 		}
 		installationRegistry.load()
+		for name := range installationRegistry.installations {
+			RegisterServiceLogMonitor(name)
+		}
 	})
 
 	return installationRegistry
@@ -79,6 +82,7 @@ func (r *InstallationRegistry) AddInstallation(service *serviceImpl) error {
 		service.LastStartTime = time.Now()
 	}
 	r.installations[service.Name] = service
+	RegisterServiceLogMonitor(service.Name)
 	r.mu.Unlock()
 
 	return r.save()
