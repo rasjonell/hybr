@@ -1,13 +1,13 @@
 # file: .air.toml
 
-root = "."
-tmp_dir = "bin"
+root = "../../"
+tmp_dir = "./cmd/server/bin"
 
 [build]
   bin = "./bin/main"
   cmd = "templ generate && npm run build && go build -o ./bin/main ."
   delay = 500
-  exclude_dir = ["static", "node_modules"]
+  exclude_dir = ["./cmd/server/static", "./cmd/server/node_modules"]
   exclude_regex = [".*_templ.go"]
   exclude_unchanged = false
   follow_symlink = false

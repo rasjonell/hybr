@@ -7,6 +7,7 @@ import (
 	"hybr/cmd/server/view"
 	"hybr/cmd/server/view/components"
 	"hybr/cmd/server/view/layout"
+	"hybr/internal/orchestration"
 	"hybr/internal/services"
 	"net/http"
 	"strconv"
@@ -84,16 +85,22 @@ func HandleLogsSSE(w http.ResponseWriter, r *http.Request) {
 	serviceName := mux.Vars(r)["name"]
 
 	rc, doneChan := utils.SetupSSE(w, r)
+	subManager, eventChan := orchestration.GetSubscriptionManagerWithEventChan()
 
-	logChan := make(chan string)
-	go services.FollowLogs(doneChan, logChan, serviceName)
+	event := services.GetServiceLogEvent(serviceName)
+	subManager.Subscribe(event, eventChan)
 
 	for {
-		logLine, ok := <-logChan
-		if !ok {
+		select {
+		case <-doneChan:
+			subManager.Unsubscribe(event, eventChan)
+			close(eventChan)
 			return
+		case msg := <-eventChan:
+			if msg.EventType == event {
+				utils.SendSSE(w, buildLogEvent(msg.Data), rc)
+			}
 		}
-		utils.SendSSE(w, buildLogEvent(logLine), rc)
 	}
 }
 
