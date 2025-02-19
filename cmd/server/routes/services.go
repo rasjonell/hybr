@@ -1,7 +1,6 @@
 package routes
 
 import (
-	"context"
 	"fmt"
 	"hybr/cmd/server/utils"
 	"hybr/cmd/server/view"
@@ -32,9 +31,21 @@ func InitServicesRouter(router *mux.Router) {
 		HandlerFunc(HandleServiceEditAction).
 		Methods("POST")
 
+		// SSE Handlers
+
 	router.
 		Path("/{name}/logs").
 		HandlerFunc(HandleLogsSSE).
+		Methods("GET")
+
+	router.
+		Path("/{name}/status").
+		HandlerFunc(HandleStatusSSE).
+		Methods("GET")
+
+	router.
+		Path("/{name}/components").
+		HandlerFunc(HandleComponentStatusSSE).
 		Methods("GET")
 }
 
@@ -46,12 +57,12 @@ func HandleServicePage(w http.ResponseWriter, r *http.Request) {
 	}
 
 	serviceName := mux.Vars(r)["name"]
-	layout.Base(view.Service(serviceName, tab, false)).Render(r.Context(), w)
+	layout.Base(nil, view.Service(serviceName, tab, false)).Render(r.Context(), w)
 }
 
 func HandleServiceEditPage(w http.ResponseWriter, r *http.Request) {
 	serviceName := mux.Vars(r)["name"]
-	layout.Base(view.Service(serviceName, 2, true)).Render(r.Context(), w)
+	layout.Base(nil, view.Service(serviceName, 2, true)).Render(r.Context(), w)
 }
 
 func HandleServiceEditAction(w http.ResponseWriter, r *http.Request) {
@@ -78,7 +89,13 @@ func HandleServiceEditAction(w http.ResponseWriter, r *http.Request) {
 
 	go services.UpdateVars(serviceName, vars)
 
-	layout.Base(view.Service(serviceName, 0, false)).Render(r.Context(), w)
+	layout.Base(
+		&components.SnackBarNotification{
+			Type:    "info",
+			Content: fmt.Sprintf("%s Variables Updated. Restarting...", strings.ToUpper(serviceName)),
+		},
+		view.Service(serviceName, 0, false),
+	).Render(r.Context(), w)
 }
 
 func HandleLogsSSE(w http.ResponseWriter, r *http.Request) {
@@ -98,15 +115,54 @@ func HandleLogsSSE(w http.ResponseWriter, r *http.Request) {
 			return
 		case msg := <-eventChan:
 			if msg.EventType == event {
-				utils.SendSSE(w, buildLogEvent(msg.Data), rc)
+				utils.SendSSE(w, utils.SSEComponentEvent(components.Log(msg.Data), "log"), rc)
 			}
 		}
 	}
 }
 
-func buildLogEvent(logLine string) string {
-	var buf strings.Builder
-	_ = components.Log(logLine).Render(context.Background(), &buf)
+func HandleStatusSSE(w http.ResponseWriter, r *http.Request) {
+	serviceName := mux.Vars(r)["name"]
 
-	return fmt.Sprintf("event: log\ndata: %s\n\n", buf.String())
+	rc, doneChan := utils.SetupSSE(w, r)
+	subManager, eventChan := orchestration.GetSubscriptionManagerWithEventChan()
+
+	event := services.GetServiceStatusEvent(serviceName)
+	subManager.Subscribe(event, eventChan)
+
+	for {
+		select {
+		case <-doneChan:
+			subManager.Unsubscribe(event, eventChan)
+			close(eventChan)
+			return
+		case msg := <-eventChan:
+			if msg.EventType == event {
+				utils.SendSSE(w, utils.SSEStringvent("status", msg.Data), rc)
+			}
+		}
+	}
+}
+
+func HandleComponentStatusSSE(w http.ResponseWriter, r *http.Request) {
+	serviceName := mux.Vars(r)["name"]
+
+	rc, doneChan := utils.SetupSSE(w, r)
+	subManager, eventChan := orchestration.GetSubscriptionManagerWithEventChan()
+
+	event := services.GetServiceComponentStatusEvent(serviceName)
+	subManager.Subscribe(event, eventChan)
+
+	for {
+		select {
+		case <-doneChan:
+			subManager.Unsubscribe(event, eventChan)
+			close(eventChan)
+			return
+		case msg := <-eventChan:
+			if msg.EventType == event {
+				utils.SendSSE(w, utils.SSEStringvent(msg.Extras["ComponentName"], msg.Data), rc)
+			}
+		}
+	}
 }

@@ -19,13 +19,17 @@ templ val(title string) {
 
 func valueComponent(key, title string) templ.Component {
 	if strings.ToLower(key) == "status" {
-		return icons.Chip(title, title == "running")
+		return icons.Chip(title, title == "running", "status")
 	}
 	return val(title)
 }
 
-templ Info(title string, keys, vals []string) {
-	<div class="space-y-4">
+templ Info(serviceName, title string, keys, vals []string) {
+	<div
+		class="space-y-4"
+		hx-ext="sse"
+		sse-connect={ "/services/" + serviceName + "/status" }
+	>
 		<h2 class="text-2xl font-semibold mb-4 text-gray-800">{ title }</h2>
 		for i, key := range keys {
 			<p class="flex justify-between border-b border-gray-200 py-2">

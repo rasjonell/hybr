@@ -1,8 +1,12 @@
 package utils
 
 import (
+	"context"
 	"fmt"
 	"net/http"
+	"strings"
+
+	"github.com/a-h/templ"
 )
 
 func SetupSSE(w http.ResponseWriter, r *http.Request) (*http.ResponseController, <-chan struct{}) {
@@ -30,4 +34,15 @@ func SendSSE(w http.ResponseWriter, msg string, rc *http.ResponseController) {
 	if err != nil {
 		return
 	}
+}
+
+func SSEStringvent(event, data string) string {
+	return fmt.Sprintf("event: %s\ndata: %s\n\n", event, data)
+}
+
+func SSEComponentEvent(component templ.Component, event string) string {
+	var buf strings.Builder
+	_ = component.Render(context.Background(), &buf)
+
+	return SSEStringvent(event, buf.String())
 }

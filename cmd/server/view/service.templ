@@ -22,12 +22,13 @@ var tabs = [...]string{"Service Info", "Components", "Variables", "Logs"}
 func CurrentTabContent(serviceName string, activeTab int, isEdit bool) templ.Component {
 	installation, exists := registry.GetInstallation(serviceName)
 	if !exists {
-		return components.Info("Unknown Service", []string{}, []string{})
+		return components.Info(serviceName, "Unknown Service", []string{}, []string{})
 	}
 
 	switch activeTab {
 	case 0:
 		return components.Info(
+			serviceName,
 			tabs[activeTab],
 			[]string{"Name", "Status", "Global URL", "Local URL", "Install Date", "Last Start Date"},
 			[]string{installation.GetName(), installation.GetStatus(), installation.GetURL(), "localhost:" + installation.GetPort(),
@@ -36,7 +37,7 @@ func CurrentTabContent(serviceName string, activeTab int, isEdit bool) templ.Com
 		)
 
 	case 1:
-		return components.DockerComponents(installation.GetComponents())
+		return components.DockerComponents(serviceName, installation.GetComponents())
 
 	case 2:
 		if isEdit {
@@ -49,7 +50,7 @@ func CurrentTabContent(serviceName string, activeTab int, isEdit bool) templ.Com
 		return components.Logs(serviceName)
 	}
 
-	return components.Info("Unknown tab", []string{}, []string{})
+	return components.Info(serviceName, "Unknown tab", []string{}, []string{})
 }
 
 templ Service(serviceName string, activeTab int, isEdit bool) {

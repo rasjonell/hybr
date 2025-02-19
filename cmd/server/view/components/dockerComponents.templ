@@ -5,8 +5,11 @@ import (
 	"hybr/internal/docker"
 )
 
-templ DockerComponents(comps []*docker.Component) {
-	<div>
+templ DockerComponents(serviceName string, comps []*docker.Component) {
+	<div
+		hx-ext="sse"
+		sse-connect={ "/services/" + serviceName + "/components" }
+	>
 		<h2 class="text-2xl font-semibold mb-4 text-gray-800">Components</h2>
 		<table class="w-full">
 			<thead>
@@ -22,7 +25,7 @@ templ DockerComponents(comps []*docker.Component) {
 						<td class="py-2 px-4">{ component.Name }</td>
 						<td class="py-2 px-4">{ component.Version }</td>
 						<td class="py-2 px-4">
-							@icons.Chip(component.Status, component.Status == "running")
+							@icons.Chip(component.Status, component.Status == "running", component.Name)
 						</td>
 					</tr>
 				}
