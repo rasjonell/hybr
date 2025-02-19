@@ -1,10 +1,13 @@
 package layout
 
-import "hybr/internal/services"
+import (
+	"hybr/cmd/server/view/components"
+	"hybr/internal/services"
+)
 
 var installedServices []string = services.GetInstalledServices()
 
-templ Base(children ...templ.Component) {
+templ Base(notification *components.SnackBarNotification, children ...templ.Component) {
 	<!DOCTYPE html>
 	<html lang="en">
 		<head>
@@ -55,6 +58,7 @@ templ Base(children ...templ.Component) {
 						}
 					</nav>
 				</div>
+				@components.SnackBar(notification)
 				<main class="flex-1 overflow-x-hidden overflow-y-auto bg-gray-50 p-6">
 					for _, child := range children {
 						<div class="max-w-7x1 mx-auto">

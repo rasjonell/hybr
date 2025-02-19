@@ -1,8 +1,6 @@
 package routes
 
 import (
-	"context"
-	"fmt"
 	"hybr/cmd/server/utils"
 	"hybr/cmd/server/view"
 	"hybr/cmd/server/view/components"
@@ -10,7 +8,6 @@ import (
 	"hybr/internal/orchestration"
 	"hybr/internal/system"
 	"net/http"
-	"strings"
 
 	"github.com/a-h/templ"
 	"github.com/gorilla/mux"
@@ -23,7 +20,7 @@ func InitHomeRouter(router *mux.Router) {
 
 	router.
 		Path("/").
-		Handler(templ.Handler(layout.Base(view.Index())))
+		Handler(templ.Handler(layout.Base(nil, view.Index())))
 }
 
 func HandleUsageSSE(w http.ResponseWriter, r *http.Request) {
@@ -45,19 +42,12 @@ func HandleUsageSSE(w http.ResponseWriter, r *http.Request) {
 		case msg := <-eventChan:
 			switch msg.EventType {
 			case system.CPU_USAGE_EVENT:
-				utils.SendSSE(w, buildUsageEvent(msg.Data, "CPU Usage", "cpu"), rc)
+				utils.SendSSE(w, utils.SSEComponentEvent(components.Usage("CPU Usage", msg.Data), "cpu"), rc)
 			case system.RAM_USAGE_EVENT:
-				utils.SendSSE(w, buildUsageEvent(msg.Data, "Memory Usage", "ram"), rc)
+				utils.SendSSE(w, utils.SSEComponentEvent(components.Usage("Memory Usage", msg.Data), "ram"), rc)
 			case system.DISK_USAGE_EVENT:
-				utils.SendSSE(w, buildUsageEvent(msg.Data, "Disk Usage", "disk"), rc)
+				utils.SendSSE(w, utils.SSEComponentEvent(components.Usage("Disk Usage", msg.Data), "disk"), rc)
 			}
 		}
 	}
-}
-
-func buildUsageEvent(usage string, title, event string) string {
-	var buf strings.Builder
-	_ = components.Usage(title, usage).Render(context.Background(), &buf)
-
-	return fmt.Sprintf("event: %s\ndata: %s\n\n", event, buf.String())
 }
