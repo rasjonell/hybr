@@ -48,21 +48,30 @@ func (sm *SubscriptionManager) RegisterEventSource(eventType EventType, source E
 	return nil
 }
 
-func (sm *SubscriptionManager) Subscribe(eventType EventType, eventChan chan *EventChannelData) {
+func (sm *SubscriptionManager) Subscribe(eventChan chan *EventChannelData, eventTypes ...EventType) (cleanup func()) {
 	sm.mu.Lock()
 	defer sm.mu.Unlock()
 
-	sm.listeners[eventType] = append(sm.listeners[eventType], eventChan)
-	fmt.Printf("%d Listeners for %s\n", len(sm.listeners[eventType]), eventType)
+	for _, eventType := range eventTypes {
+		sm.listeners[eventType] = append(sm.listeners[eventType], eventChan)
+		fmt.Printf("%d Listeners for %s\n", len(sm.listeners[eventType]), eventType)
 
-	if _, ok := sm.runningServices[eventType]; !ok {
-		sm.runningServices[eventType] = make(chan struct{})
-		go sm.startEventService(eventType, sm.runningServices[eventType])
+		if _, ok := sm.runningServices[eventType]; !ok {
+			sm.runningServices[eventType] = make(chan struct{})
+			go sm.startEventService(eventType, sm.runningServices[eventType])
+		}
+		if sm.cache[eventType] != nil {
+			go func() {
+				eventChan <- sm.cache[eventType]
+			}()
+		}
 	}
-	if sm.cache[eventType] != nil {
-		go func() {
-			eventChan <- sm.cache[eventType]
-		}()
+
+	return func() {
+		for _, eventType := range eventTypes {
+			sm.Unsubscribe(eventType, eventChan)
+		}
+		close(eventChan)
 	}
 }
 

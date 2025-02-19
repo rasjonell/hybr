@@ -105,13 +105,12 @@ func HandleLogsSSE(w http.ResponseWriter, r *http.Request) {
 	subManager, eventChan := orchestration.GetSubscriptionManagerWithEventChan()
 
 	event := services.GetServiceLogEvent(serviceName)
-	subManager.Subscribe(event, eventChan)
+	cleanup := subManager.Subscribe(eventChan, event)
 
 	for {
 		select {
 		case <-doneChan:
-			subManager.Unsubscribe(event, eventChan)
-			close(eventChan)
+			cleanup()
 			return
 		case msg := <-eventChan:
 			if msg.EventType == event {
@@ -128,13 +127,12 @@ func HandleStatusSSE(w http.ResponseWriter, r *http.Request) {
 	subManager, eventChan := orchestration.GetSubscriptionManagerWithEventChan()
 
 	event := services.GetServiceStatusEvent(serviceName)
-	subManager.Subscribe(event, eventChan)
+	cleanup := subManager.Subscribe(eventChan, event)
 
 	for {
 		select {
 		case <-doneChan:
-			subManager.Unsubscribe(event, eventChan)
-			close(eventChan)
+			cleanup()
 			return
 		case msg := <-eventChan:
 			if msg.EventType == event {
@@ -151,13 +149,12 @@ func HandleComponentStatusSSE(w http.ResponseWriter, r *http.Request) {
 	subManager, eventChan := orchestration.GetSubscriptionManagerWithEventChan()
 
 	event := services.GetServiceComponentStatusEvent(serviceName)
-	subManager.Subscribe(event, eventChan)
+	cleanup := subManager.Subscribe(eventChan, event)
 
 	for {
 		select {
 		case <-doneChan:
-			subManager.Unsubscribe(event, eventChan)
-			close(eventChan)
+			cleanup()
 			return
 		case msg := <-eventChan:
 			if msg.EventType == event {

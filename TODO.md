@@ -6,6 +6,7 @@
     - [ ] View Config(service.json) / Edit
     - [ ] Uninstall(Requires service stop)
     - [ ] Restart(detect active log streaming stop, restart, continue)
+    - [ ] Catch any action error and update service+component status
 
 # Done
 

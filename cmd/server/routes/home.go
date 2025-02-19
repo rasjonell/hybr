@@ -27,17 +27,12 @@ func HandleUsageSSE(w http.ResponseWriter, r *http.Request) {
 	rc, doneChan := utils.SetupSSE(w, r)
 	subManager, eventChan := orchestration.GetSubscriptionManagerWithEventChan()
 
-	subManager.Subscribe(system.CPU_USAGE_EVENT, eventChan)
-	subManager.Subscribe(system.RAM_USAGE_EVENT, eventChan)
-	subManager.Subscribe(system.DISK_USAGE_EVENT, eventChan)
+	cleanup := subManager.Subscribe(eventChan, system.CPU_USAGE_EVENT, system.RAM_USAGE_EVENT, system.DISK_USAGE_EVENT)
 
 	for {
 		select {
 		case <-doneChan:
-			subManager.Unsubscribe(system.CPU_USAGE_EVENT, eventChan)
-			subManager.Unsubscribe(system.RAM_USAGE_EVENT, eventChan)
-			subManager.Unsubscribe(system.DISK_USAGE_EVENT, eventChan)
-			close(eventChan)
+			cleanup()
 			return
 		case msg := <-eventChan:
 			switch msg.EventType {
