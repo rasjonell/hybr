@@ -2,7 +2,12 @@ package orchestration
 
 import "fmt"
 
-func ToEventData(eventType EventType, v any) *EventChannelData {
+func ToEventData(eventType EventType, v any, extras ...map[string]string) *EventChannelData {
+	extra := make(map[string]string)
+	if len(extras) != 0 {
+		extra = extras[0]
+	}
+
 	var data string
 	switch v.(type) {
 	case string:
@@ -16,6 +21,7 @@ func ToEventData(eventType EventType, v any) *EventChannelData {
 
 	return &EventChannelData{
 		Data:      data,
+		Extras:    extra,
 		EventType: eventType,
 	}
 }

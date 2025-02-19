@@ -10,6 +10,7 @@ type EventType string
 type EventChannelData struct {
 	Data      string
 	EventType EventType
+	Extras    map[string]string
 }
 
 type EventSource interface {
