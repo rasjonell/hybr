@@ -42,7 +42,7 @@ func GetRegistry() *InstallationRegistry {
 		}
 		installationRegistry.load()
 		for name := range installationRegistry.installations {
-			RegisterServiceLogMonitor(name)
+			RegisterEventSources(name)
 		}
 	})
 
@@ -82,7 +82,7 @@ func (r *InstallationRegistry) AddInstallation(service *serviceImpl) error {
 		service.LastStartTime = time.Now()
 	}
 	r.installations[service.Name] = service
-	RegisterServiceLogMonitor(service.Name)
+	RegisterEventSources(service.Name)
 	r.mu.Unlock()
 
 	return r.save()

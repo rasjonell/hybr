@@ -1,17 +1,19 @@
 package services
 
 import (
-	"fmt"
+	"log"
 )
 
-func UpdateVars(serviceName string, updatedVars map[string][]*VariableDefinition) error {
+func UpdateVars(serviceName string, updatedVars map[string][]*VariableDefinition) {
 	installation, exists := installationRegistry.GetInstallation(serviceName)
 	if !exists {
-		return fmt.Errorf("service %s not found", serviceName)
+		log.Printf("Service doesn't exist")
+		return
 	}
 	service, ok := installation.(*serviceImpl)
 	if !ok {
-		return fmt.Errorf("Invalid service type")
+		log.Printf("Invalid service type")
+		return
 	}
 
 	service.Status = "restarting"
@@ -20,7 +22,8 @@ func UpdateVars(serviceName string, updatedVars map[string][]*VariableDefinition
 	}
 
 	if err := installationRegistry.save(); err != nil {
-		return fmt.Errorf("Failed to save installtion: %w", err)
+		log.Printf("Failed to save installtion: %v", err)
+		return
 	}
 
 	for fileName, vars := range updatedVars {
@@ -35,11 +38,13 @@ func UpdateVars(serviceName string, updatedVars map[string][]*VariableDefinition
 	}
 
 	if err := reinstallTemplates(service, serviceName); err != nil {
-		return err
+		log.Printf("%v\n", err)
+		return
 	}
 
 	if err := RestartService(serviceName); err != nil {
-		return err
+		log.Printf("%v\n", err)
+		return
 	}
 
 	service.Status = "running"
@@ -48,8 +53,7 @@ func UpdateVars(serviceName string, updatedVars map[string][]*VariableDefinition
 	}
 
 	if err := installationRegistry.save(); err != nil {
-		return fmt.Errorf("Failed to save installtion: %w", err)
+		log.Printf("Failed to save installtion: %v", err)
+		return
 	}
-
-	return nil
 }
