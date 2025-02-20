@@ -2,7 +2,6 @@
 
 # Done
 
-
 - [x] Global Notification System
     - [x] Global Notification Channel
     - [x] SSE for notifications
@@ -28,3 +27,7 @@
     - [x] Persistent Service Installations
     - [x] Client-Side Service Info + Realtime Logs
 
+# Before v1
+
+- [ ] Use minified HTMX (check for local/prod?)
+- [ ] Include install.sh checksum in README
