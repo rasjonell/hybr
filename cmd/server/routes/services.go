@@ -1,7 +1,6 @@
 package routes
 
 import (
-	"fmt"
 	"hybr/cmd/server/utils"
 	"hybr/cmd/server/view"
 	"hybr/cmd/server/view/components"
@@ -65,12 +64,12 @@ func HandleServicePage(w http.ResponseWriter, r *http.Request) {
 	}
 
 	serviceName := mux.Vars(r)["name"]
-	layout.Base(nil, view.Service(serviceName, tab, false)).Render(r.Context(), w)
+	layout.Base(view.Service(serviceName, tab, false)).Render(r.Context(), w)
 }
 
 func HandleServiceEditPage(w http.ResponseWriter, r *http.Request) {
 	serviceName := mux.Vars(r)["name"]
-	layout.Base(nil, view.Service(serviceName, 2, true)).Render(r.Context(), w)
+	layout.Base(view.Service(serviceName, 2, true)).Render(r.Context(), w)
 }
 
 func HandleServiceEditAction(w http.ResponseWriter, r *http.Request) {
@@ -97,39 +96,21 @@ func HandleServiceEditAction(w http.ResponseWriter, r *http.Request) {
 
 	go services.UpdateVars(serviceName, vars)
 
-	layout.Base(
-		&components.SnackBarNotification{
-			Type:    "info",
-			Content: fmt.Sprintf("%s Variables Updated. Restarting...", strings.ToUpper(serviceName)),
-		},
-		view.Service(serviceName, 0, false),
-	).Render(r.Context(), w)
+	layout.Base(view.Service(serviceName, 0, false)).Render(r.Context(), w)
 }
 
 func HandleServiceRestartAction(w http.ResponseWriter, r *http.Request) {
 	serviceName := mux.Vars(r)["name"]
 
 	go services.Restart(serviceName)
-	layout.Base(
-		&components.SnackBarNotification{
-			Type:    "info",
-			Content: fmt.Sprintf("Restarting %s Service", strings.ToUpper(serviceName)),
-		},
-		view.Service(serviceName, 0, false),
-	).Render(r.Context(), w)
+	w.WriteHeader(204)
 }
 
 func HandleServiceStopAction(w http.ResponseWriter, r *http.Request) {
 	serviceName := mux.Vars(r)["name"]
 
 	go services.Stop(serviceName)
-	layout.Base(
-		&components.SnackBarNotification{
-			Type:    "warning",
-			Content: fmt.Sprintf("Stopping %s Service", strings.ToUpper(serviceName)),
-		},
-		view.Service(serviceName, 0, false),
-	).Render(r.Context(), w)
+	w.WriteHeader(204)
 }
 
 func HandleLogsSSE(w http.ResponseWriter, r *http.Request) {
@@ -170,7 +151,7 @@ func HandleStatusSSE(w http.ResponseWriter, r *http.Request) {
 			return
 		case msg := <-eventChan:
 			if msg.EventType == event {
-				utils.SendSSE(w, utils.SSEStringvent("status", msg.Data), rc)
+				utils.SendSSE(w, utils.SSEStringEvent("status", msg.Data), rc)
 			}
 		}
 	}
@@ -192,7 +173,7 @@ func HandleComponentStatusSSE(w http.ResponseWriter, r *http.Request) {
 			return
 		case msg := <-eventChan:
 			if msg.EventType == event {
-				utils.SendSSE(w, utils.SSEStringvent(msg.Extras["ComponentName"], msg.Data), rc)
+				utils.SendSSE(w, utils.SSEStringEvent(msg.Extras["ComponentName"], msg.Data), rc)
 			}
 		}
 	}
