@@ -7,7 +7,7 @@ import (
 
 var installedServices []string = services.GetInstalledServices()
 
-templ Base(notification *components.SnackBarNotification, children ...templ.Component) {
+templ Base(children ...templ.Component) {
 	<!DOCTYPE html>
 	<html lang="en">
 		<head>
@@ -22,8 +22,12 @@ templ Base(notification *components.SnackBarNotification, children ...templ.Comp
         }
       </style>
 		</head>
-		<body class="bg-gray-50 text-gray-900">
-			<div class="flex h-screen">
+		<body
+			class="bg-gray-50 text-gray-900"
+		>
+			<div
+				class="flex h-screen"
+			>
 				<!-- SideBar -->
 				<div class="bg-white text-gray-800 w-64 space-y-6 py-7 px-2 absolute inset-y-0 left-0 transform -translate-x-full md:relative md:translate-x-0 transition duration-200 ease-in-out shadow-lg">
 					<a href="/" class="flex items-center space-x-2 px-4">
@@ -58,7 +62,6 @@ templ Base(notification *components.SnackBarNotification, children ...templ.Comp
 						}
 					</nav>
 				</div>
-				@components.SnackBar(notification)
 				<main class="flex-1 overflow-x-hidden overflow-y-auto bg-gray-50 p-6">
 					for _, child := range children {
 						<div class="max-w-7x1 mx-auto">
@@ -66,8 +69,17 @@ templ Base(notification *components.SnackBarNotification, children ...templ.Comp
 						</div>
 					}
 				</main>
+				<div
+					hx-ext="sse"
+					sse-swap="notification"
+					sse-connect="/notifications"
+				>
+					@components.Notification("", "")
+				</div>
 			</div>
-			<script src="https://unpkg.com/htmx.org@2.0.4" integrity="sha384-HGfztofotfshcF7+8n44JQL2oJmowVChPTg48S+jvZoztPfvwD79OC/LTtG6dMp+" crossorigin="anonymous"></script>
+			<script src="/js/chip.js"></script>
+			<script src="/js/notification.js"></script>
+			<script src="https://unpkg.com/htmx.org@2.0.4/dist/htmx.js" integrity="sha384-oeUn82QNXPuVkGCkcrInrS1twIxKhkZiFfr2TdiuObZ3n3yIeMiqcRzkIcguaof1" crossorigin="anonymous"></script>
 			<script src="https://unpkg.com/htmx-ext-sse@2.2.2/sse.js"></script>
 		</body>
 	</html>

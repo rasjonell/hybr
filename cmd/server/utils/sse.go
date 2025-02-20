@@ -36,7 +36,7 @@ func SendSSE(w http.ResponseWriter, msg string, rc *http.ResponseController) {
 	}
 }
 
-func SSEStringvent(event, data string) string {
+func SSEStringEvent(event, data string) string {
 	return fmt.Sprintf("event: %s\ndata: %s\n\n", event, data)
 }
 
@@ -44,5 +44,5 @@ func SSEComponentEvent(component templ.Component, event string) string {
 	var buf strings.Builder
 	_ = component.Render(context.Background(), &buf)
 
-	return SSEStringvent(event, buf.String())
+	return SSEStringEvent(event, buf.String())
 }
