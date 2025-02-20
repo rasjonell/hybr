@@ -1,0 +1,13 @@
+package components
+
+templ Tooltip(contents ...string) {
+	<span class="absolute bottom-full left-1/2 mb-2 w-max max-w-xs -translate-x-1/2 rounded-md bg-gray-700 px-3 py-2 text-center text-sm text-white invisible group-hover:visible">
+		for i, content := range contents {
+			{ content }
+			if i != len(contents) -1 {
+				<br/>
+			}
+		}
+		<span class="absolute top-full left-1/2 -mt-0.5 -translate-x-1/2 border-4 border-transparent border-t-gray-700"></span>
+	</span>
+}

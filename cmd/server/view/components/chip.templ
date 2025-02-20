@@ -1,4 +1,4 @@
-package icons
+package components
 
 func getSwap(swaps []string) string {
 	if len(swaps) > 0 && swaps[0] != "" {
@@ -15,12 +15,7 @@ templ Chip(text string, success bool, swaps ...string) {
 				class="absolute inline-flex h-full w-full animate-ping rounded-full opacity-75 bg-green-400"
 			></span>
 			<span class="relative inline-flex size-3 rounded-full bg-green-500"></span>
-			<span class="absolute bottom-full left-1/2 mb-2 w-max max-w-xs -translate-x-1/2 rounded-md bg-gray-700 px-3 py-2 text-center text-sm text-white invisible group-hover:visible">
-				This value is automatically
-				<br/>
-				updated in real-time
-				<span class="absolute top-full left-1/2 -mt-0.5 -translate-x-1/2 border-4 border-transparent border-t-gray-700"></span>
-			</span>
+			@Tooltip("this value is automatically", "updated in real-time.")
 		</span>
 		<span
 			sse-swap={ getSwap(swaps) }

@@ -31,7 +31,15 @@ func InitServicesRouter(router *mux.Router) {
 		HandlerFunc(HandleServiceEditAction).
 		Methods("POST")
 
-		// SSE Handlers
+	router.
+		Path("/{name}/restart").
+		HandlerFunc(HandleServiceRestartAction).
+		Methods("POST")
+
+	router.
+		Path("/{name}/stop").
+		HandlerFunc(HandleServiceStopAction).
+		Methods("POST")
 
 	router.
 		Path("/{name}/logs").
@@ -93,6 +101,32 @@ func HandleServiceEditAction(w http.ResponseWriter, r *http.Request) {
 		&components.SnackBarNotification{
 			Type:    "info",
 			Content: fmt.Sprintf("%s Variables Updated. Restarting...", strings.ToUpper(serviceName)),
+		},
+		view.Service(serviceName, 0, false),
+	).Render(r.Context(), w)
+}
+
+func HandleServiceRestartAction(w http.ResponseWriter, r *http.Request) {
+	serviceName := mux.Vars(r)["name"]
+
+	go services.Restart(serviceName)
+	layout.Base(
+		&components.SnackBarNotification{
+			Type:    "info",
+			Content: fmt.Sprintf("Restarting %s Service", strings.ToUpper(serviceName)),
+		},
+		view.Service(serviceName, 0, false),
+	).Render(r.Context(), w)
+}
+
+func HandleServiceStopAction(w http.ResponseWriter, r *http.Request) {
+	serviceName := mux.Vars(r)["name"]
+
+	go services.Stop(serviceName)
+	layout.Base(
+		&components.SnackBarNotification{
+			Type:    "warning",
+			Content: fmt.Sprintf("Stopping %s Service", strings.ToUpper(serviceName)),
 		},
 		view.Service(serviceName, 0, false),
 	).Render(r.Context(), w)

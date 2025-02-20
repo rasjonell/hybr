@@ -1,7 +1,6 @@
 package components
 
 import (
-	"hybr/cmd/server/view/icons"
 	"strings"
 )
 
@@ -19,7 +18,7 @@ templ val(title string) {
 
 func valueComponent(key, title string) templ.Component {
 	if strings.ToLower(key) == "status" {
-		return icons.Chip(title, title == "running", "status")
+		return Chip(title, title == "running", "status")
 	}
 	return val(title)
 }

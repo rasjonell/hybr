@@ -3,6 +3,7 @@ package view
 import (
 	"fmt"
 	"hybr/cmd/server/view/components"
+	"hybr/cmd/server/view/icons"
 	"hybr/internal/services"
 	"time"
 )
@@ -54,7 +55,29 @@ func CurrentTabContent(serviceName string, activeTab int, isEdit bool) templ.Com
 }
 
 templ Service(serviceName string, activeTab int, isEdit bool) {
-	<h1 class="text-3xl font-bold mb-8 text-gray-800">{ serviceName }</h1>
+	<div class="flex items-center justify-between w-full mb-8">
+		<h1 class="text-3xl font-bold text-gray-800">{ serviceName }</h1>
+		<div class="flex space-x-2">
+			<form method="POST" action={ templ.URL("/services/" + serviceName + "/restart") }>
+				<button
+					type="submit"
+					title="Restart The Service"
+					class="cursor-pointer p-2 rounded-md transition duration-200 bg-orange-400 hover:bg-orange-600 active:bg-orange-700 group"
+				>
+					@icons.Restart("h-5 w-5")
+				</button>
+			</form>
+			<form method="POST" action={ templ.URL("/services/" + serviceName + "/stop") }>
+				<button
+					type="submit"
+					title="Stop The Service"
+					class="cursor-pointer p-2 rounded-md transition duration-200 bg-red-600 hover:bg-red-700 active:bg-red-900 group"
+				>
+					@icons.Stop("h-5 w-5")
+				</button>
+			</form>
+		</div>
+	</div>
 	<div class="mb-6 flex space-x-2">
 		for tab, title := range tabs {
 			<a

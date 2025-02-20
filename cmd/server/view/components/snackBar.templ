@@ -8,7 +8,7 @@ type SnackBarNotification struct {
 }
 
 func getStyles(notifType string) string {
-	defaultStyles := "fixed top-4 right-4 px-4 py-2 rounded-md shadow-lg flex items-center space-x-2 text-white "
+	defaultStyles := "fixed top-4 left-1/2 -translate-x-1/2 px-4 py-2 rounded-md shadow-lg flex items-center space-x-2 text-white "
 	switch notifType {
 	case "success":
 		return defaultStyles + "bg-green-500"
@@ -53,6 +53,11 @@ templ SnackBar(notification *SnackBarNotification) {
 		</div>
 		<script>
       setTimeout(hideSnackbar, 5000)
+
+      function showSnackbar(notification) {
+        const snackbar = document.getElementById("snackbar");
+        snackbar.classList.remove("hidden")
+      }
 
       function hideSnackbar() {
         const snackbar = document.getElementById("snackbar");

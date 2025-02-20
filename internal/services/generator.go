@@ -107,18 +107,26 @@ func InstallServices(selected []HybrService, bc nginx.NginxConfig) (err error) {
 
 func RestartService(serviceName string) error {
 	serviceDir := filepath.Join(getWorkingDirectory(), "services", serviceName)
+	if err := StopService(serviceName); err != nil {
+		return err
+	}
+
+	cmd := exec.Command("sh", "-c", "docker compose up -d")
+	cmd.Dir = serviceDir
+	if err := nginx.PipeCmdToStdout(cmd, "docker"); err != nil {
+		return err
+	}
+
+	return nil
+}
+
+func StopService(serviceName string) error {
+	serviceDir := filepath.Join(getWorkingDirectory(), "services", serviceName)
 	cmd := exec.Command("sh", "-c", "docker compose down -v")
 	cmd.Dir = serviceDir
 	if err := nginx.PipeCmdToStdout(cmd, "docker"); err != nil {
 		return err
 	}
-
-	cmd = exec.Command("sh", "-c", "docker compose up -d")
-	cmd.Dir = serviceDir
-	if err := nginx.PipeCmdToStdout(cmd, "docker"); err != nil {
-		return err
-	}
-
 	return nil
 }
 

@@ -18,8 +18,8 @@ templ Variables(serviceName string, vars map[string][]*services.VariableDefiniti
 	<div>
 		<div class="flex items-center mb-4 justify-between">
 			<h2 class="text-3xl font-semibold text-gray-800">Variables</h2>
-			<a href={ templ.URL("/services/" + serviceName + "/edit") } class="bg-blue-600 p-3 rounded-md cursor-pointer" title="Edit Variables">
-				@icons.Edit("w-7 h-7")
+			<a href={ templ.URL("/services/" + serviceName + "/edit") } class="bg-blue-600 p-2 rounded-md cursor-pointer" title="Edit Variables">
+				@icons.Edit("w-5 h-5")
 			</a>
 		</div>
 		for fileName, variables := range vars {
@@ -46,8 +46,8 @@ templ VariablesEdit(serviceName string, vars map[string][]*services.VariableDefi
 		<form method="POST" id="varsForm">
 			<div class="flex items-center mb-4 justify-between">
 				<h2 class="text-3xl font-semibold text-gray-800">Edit Variables</h2>
-				<button type="submit" class="bg-blue-600 p-3 rounded-md cursor-pointer" title="Save Variables">
-					@icons.Save("w-7 h-7 fill-white")
+				<button type="submit" class="bg-blue-600 p-2 rounded-md cursor-pointer" title="Save Variables">
+					@icons.Save("w-5 h-5 fill-white")
 				</button>
 			</div>
 			for fileName, variables := range vars {

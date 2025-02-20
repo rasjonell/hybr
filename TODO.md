@@ -1,14 +1,18 @@
 # To Do
 
-- [ ] Service Edit
-    - [x] View Vars / Edit Vars (trigger restart)
-    - [x] Show Alerts on actions
-    - [ ] View Config(service.json) / Edit
-    - [ ] Uninstall(Requires service stop)
-    - [ ] Restart(detect active log streaming stop, restart, continue)
-    - [ ] Catch any action error and update service+component status
+- [ ] Global Notification System
+    - [ ] Global Notification Channel
+    - [ ] SSE for notifications
+    - [ ] Display alerts on actions/notifications
 
 # Done
+
+- [x] Service Edit
+    - [x] View Vars / Edit Vars (trigger restart)
+    - [x] Show Alerts on actions
+    - [x] View Config(service.json) / Edit
+    - [x] Stop The Service
+    - [x] Restart(detect active log streaming stop, restart, continue)
 
 - [x] Real-Time Event Orchestration
     - [x] SubscriptionManager
