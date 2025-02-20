@@ -1,11 +1,12 @@
 # To Do
 
-- [ ] Global Notification System
-    - [ ] Global Notification Channel
-    - [ ] SSE for notifications
-    - [ ] Display alerts on actions/notifications
-
 # Done
+
+
+- [x] Global Notification System
+    - [x] Global Notification Channel
+    - [x] SSE for notifications
+    - [x] Display alerts on actions/notifications
 
 - [x] Service Edit
     - [x] View Vars / Edit Vars (trigger restart)
