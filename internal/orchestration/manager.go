@@ -58,8 +58,13 @@ func (sm *SubscriptionManager) Subscribe(eventChan chan *EventChannelData, event
 
 		if _, ok := sm.runningServices[eventType]; !ok {
 			sm.runningServices[eventType] = make(chan struct{})
-			go sm.startEventService(eventType, sm.runningServices[eventType])
+			if eventType == SYSTEM_NOTIFICATION_EVENT {
+				go startNotificationMonitor(sm, sm.runningServices[eventType])
+			} else {
+				go sm.startEventService(eventType, sm.runningServices[eventType])
+			}
 		}
+
 		if sm.cache[eventType] != nil {
 			go func() {
 				eventChan <- sm.cache[eventType]
@@ -119,14 +124,18 @@ func (sm *SubscriptionManager) startEventService(eventType EventType, stopChan <
 			sm.mu.Lock()
 			sm.cache[eventType] = event
 			for _, listenerChan := range sm.listeners[eventType] {
-				listenerChan <- event
+				go func(ch chan *EventChannelData) {
+					ch <- event
+				}(listenerChan)
 			}
 			sm.mu.Unlock()
 		}
 	}
 }
 
-var subscriptionManager *SubscriptionManager
+var (
+	subscriptionManager *SubscriptionManager
+)
 
 func init() {
 	subscriptionManager = NewSubscriptionManager()

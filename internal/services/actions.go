@@ -2,18 +2,28 @@ package services
 
 import (
 	"fmt"
+	"hybr/internal/orchestration"
 	"log"
+	"strings"
 )
 
 func Stop(serviceName string) {
+	orchestration.SendWarningNotification(
+		fmt.Sprintf("Stoping %s Service", strings.ToTitle(serviceName)),
+	)
+
 	service, err := initServiceAction(serviceName, "stopping", "stopped")
 	if err != nil {
-		log.Println(err)
+		orchestration.SendErrorNotification(
+			fmt.Sprintf("%s", err.Error()),
+		)
 		return
 	}
 
 	if err := StopService(serviceName); err != nil {
-		log.Printf("%v\n", err)
+		orchestration.SendErrorNotification(
+			fmt.Sprintf("%s", err.Error()),
+		)
 		return
 	}
 
@@ -23,20 +33,34 @@ func Stop(serviceName string) {
 	}
 
 	if err := installationRegistry.save(); err != nil {
-		log.Printf("Failed to save installtion: %v", err)
+		orchestration.SendErrorNotification(
+			fmt.Sprintf("%s", err.Error()),
+		)
 		return
 	}
+
+	orchestration.SendSuccessNotification(
+		fmt.Sprintf("%s Service Stopped", strings.ToTitle(serviceName)),
+	)
 }
 
 func Restart(serviceName string) {
+	orchestration.SendInfoNotification(
+		fmt.Sprintf("Restarting %s Service", strings.ToTitle(serviceName)),
+	)
+
 	service, err := initServiceAction(serviceName, "restarting")
 	if err != nil {
-		log.Println(err)
+		orchestration.SendErrorNotification(
+			fmt.Sprintf("%s", err.Error()),
+		)
 		return
 	}
 
 	if err := RestartService(serviceName); err != nil {
-		log.Printf("%v\n", err)
+		orchestration.SendErrorNotification(
+			fmt.Sprintf("%s", err.Error()),
+		)
 		return
 	}
 
@@ -46,12 +70,22 @@ func Restart(serviceName string) {
 	}
 
 	if err := installationRegistry.save(); err != nil {
-		log.Printf("Failed to save installtion: %v", err)
+		orchestration.SendErrorNotification(
+			fmt.Sprintf("%s", err.Error()),
+		)
 		return
 	}
+
+	orchestration.SendSuccessNotification(
+		fmt.Sprintf("%s Service Restarted", strings.ToTitle(serviceName)),
+	)
 }
 
 func UpdateVars(serviceName string, updatedVars map[string][]*VariableDefinition) {
+	orchestration.SendInfoNotification(
+		fmt.Sprintf("Upadting %s Service Variables", strings.ToTitle(serviceName)),
+	)
+
 	service, err := initServiceAction(serviceName, "restarting")
 	if err != nil {
 		log.Println(err)
@@ -70,12 +104,16 @@ func UpdateVars(serviceName string, updatedVars map[string][]*VariableDefinition
 	}
 
 	if err := reinstallTemplates(service, serviceName); err != nil {
-		log.Printf("%v\n", err)
+		orchestration.SendErrorNotification(
+			fmt.Sprintf("%s", err.Error()),
+		)
 		return
 	}
 
 	if err := RestartService(serviceName); err != nil {
-		log.Printf("%v\n", err)
+		orchestration.SendErrorNotification(
+			fmt.Sprintf("%s", err.Error()),
+		)
 		return
 	}
 
@@ -85,7 +123,9 @@ func UpdateVars(serviceName string, updatedVars map[string][]*VariableDefinition
 	}
 
 	if err := installationRegistry.save(); err != nil {
-		log.Printf("Failed to save installtion: %v", err)
+		orchestration.SendErrorNotification(
+			fmt.Sprintf("%s", err.Error()),
+		)
 		return
 	}
 }
