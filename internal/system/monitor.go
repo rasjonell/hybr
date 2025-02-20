@@ -53,7 +53,6 @@ func (m *CPUUsageMonitor) Start(doneChan <-chan struct{}, cpuChan chan<- *orches
 	for {
 		select {
 		case <-doneChan:
-			close(cpuChan)
 			return
 		default:
 			time.Sleep(10 * time.Second)
@@ -80,7 +79,6 @@ func (m *RAMUsageMonitor) Start(doneChan <-chan struct{}, ramChan chan<- *orches
 	for {
 		select {
 		case <-doneChan:
-			close(ramChan)
 			return
 		default:
 			file, err := os.Open("/proc/meminfo")
@@ -115,7 +113,6 @@ func (m *DiskUsageMonitor) Start(doneChan <-chan struct{}, diskChan chan<- *orch
 	for {
 		select {
 		case <-doneChan:
-			close(diskChan)
 			return
 		default:
 			var stat syscall.Statfs_t

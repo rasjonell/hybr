@@ -14,6 +14,9 @@ func main() {
 	fs := http.FileServer(http.Dir("./static"))
 	router.PathPrefix("/static").Handler(http.StripPrefix("/static", fs))
 
+	jsFs := http.FileServer(http.Dir("./view/js"))
+	router.PathPrefix("/js").Handler(http.StripPrefix("/js", jsFs))
+
 	routes.InitHomeRouter(
 		router.PathPrefix("/").Subrouter(),
 	)
