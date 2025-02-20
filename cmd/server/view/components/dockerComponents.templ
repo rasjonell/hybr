@@ -22,7 +22,7 @@ templ DockerComponents(serviceName string, comps []*docker.Component) {
 						<td class="py-2 px-4">{ component.Name }</td>
 						<td class="py-2 px-4">{ component.Version }</td>
 						<td class="py-2 px-4">
-							@Chip(component.Status, component.Status == "running", component.Name)
+							@Chip(component.Status, component.Status == "running", "status_"+component.Name)
 						</td>
 					</tr>
 				}

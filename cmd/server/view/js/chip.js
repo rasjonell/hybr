@@ -12,7 +12,7 @@
   const errorChipInnerClass = `${defaultChipInnerClass} bg-red-500`;
 
   function updateStyles(e) {
-    if (e.detail.type === 'notification') {
+    if (!e.detail.type.startsWith("status")) {
       return
     }
 

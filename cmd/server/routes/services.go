@@ -173,7 +173,7 @@ func HandleComponentStatusSSE(w http.ResponseWriter, r *http.Request) {
 			return
 		case msg := <-eventChan:
 			if msg.EventType == event {
-				utils.SendSSE(w, utils.SSEStringEvent(msg.Extras["ComponentName"], msg.Data), rc)
+				utils.SendSSE(w, utils.SSEStringEvent("status_"+msg.Extras["ComponentName"], msg.Data), rc)
 			}
 		}
 	}

@@ -1,6 +1,7 @@
 package components
 
 import (
+	"hybr/cmd/server/view/icons"
 	"strings"
 )
 
@@ -34,7 +35,10 @@ templ Info(serviceName, title string, keys, vals []string) {
 			<p class="flex justify-between border-b border-gray-200 py-2">
 				<strong class="text-gray-700">{ key }:</strong>
 				if isURL(key) {
-					<a href={ getRedirectURL(vals[i]) } class="text-blue-600 underline" target="_blank">{ vals[i] }</a>
+					<a href={ getRedirectURL(vals[i]) } class="text-blue-600 flex items-center" target="_blank">
+						{ vals[i] }
+						@icons.External("h-5 w-5 ml-1")
+					</a>
 				} else {
 					@valueComponent(key, vals[i])
 				}
