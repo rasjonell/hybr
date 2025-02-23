@@ -2,6 +2,8 @@
 
 Take control of your digital world with `hybr` - a self-hosted infrastructure manager that lets you deploy and manage services with ease.
 
+![Hybr Progress](https://github.com/rasjonell/hybr/blob/master/progress.gif)
+
 > [!NOTE]
 > 🚧 This project is under active development. Everything including this document may be changed in the future.
 > Star the repository to follow our progress!

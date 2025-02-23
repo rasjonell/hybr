@@ -34,24 +34,6 @@ var model *Model
 
 func InitCLI() {
 	registeredServices := services.GetRegisteredServices()
-	focusTaken := false
-
-	for i, s := range registeredServices {
-		for template, variableDefinitions := range s.GetVariables() {
-			for _, v := range variableDefinitions {
-				ti := buildTextInput(v.Default)
-				if !focusTaken {
-					ti.Focus()
-					focusTaken = true
-				}
-				v.Input = ti
-				v.Value = ""
-				v.Template = template
-			}
-		}
-
-		registeredServices[i] = s
-	}
 
 	step := StepBaseConfigInput
 	if flags.isBaseConfigComplete || flags.forceNoSSL {
@@ -64,6 +46,25 @@ func InitCLI() {
 		services:            registeredServices,
 		baseConfigVariables: getBaseConfigVariables(),
 		selected:            make(map[string]services.HybrService),
+	}
+}
+
+func (m *Model) initInputs() {
+	focusTaken := false
+	for _, serviceName := range m.selectedServiceNames {
+		s := m.selected[serviceName]
+		for template, variableDefinitions := range s.GetVariables() {
+			for _, v := range variableDefinitions {
+				ti := buildTextInput(v.Default)
+				if !focusTaken {
+					ti.Focus()
+					focusTaken = true
+				}
+				v.Input = ti
+				v.Value = ""
+				v.Template = template
+			}
+		}
 	}
 }
 
