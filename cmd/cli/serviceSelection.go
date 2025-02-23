@@ -58,6 +58,7 @@ func (m *Model) updateServiceSelection(msg tea.Msg) (tea.Model, tea.Cmd) {
 			}
 
 			m.cursor = 0
+			m.initInputs()
 			m.step = StepVariableInput
 		}
 	}

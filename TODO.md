@@ -2,6 +2,8 @@
 
 # Done
 
+- [x] Nextcloud service templates
+
 - [x] Global Notification System
     - [x] Global Notification Channel
     - [x] SSE for notifications

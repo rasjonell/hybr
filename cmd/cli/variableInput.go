@@ -24,8 +24,10 @@ func (m *Model) updateVariableInput(msg tea.Msg) (tea.Model, tea.Cmd) {
 				if m.activeServiceIndex == len(m.selected)-1 {
 					m.step = StepConfirmation
 				} else {
+					currentVar.Input.Blur()
 					m.activeServiceIndex++
 					m.cursor = 0
+					cmds = append(cmds, m.getCurrentVariables()[m.cursor].Input.Focus())
 				}
 			} else {
 				currentVar.Input.Blur()

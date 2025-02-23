@@ -21,5 +21,43 @@
       "docker-compose.yml.templ",
       ".env.templ"
     ]
+  },
+  {
+    "name": "nextcloud",
+    "description": "Nextcloud - Personal Cloud Provider",
+    "subDomain": true,
+    "variables": {
+      ".env.templ": [
+        {
+          "name": "PORT",
+          "default": "8281",
+          "description": "HTTP Port"
+        },
+        {
+          "name": "MYSQL_ROOT_PASSWORD",
+          "default": "nextcloud",
+          "description": "MariaDB Root Password"
+        },
+        {
+          "name": "MYSQL_USER",
+          "default": "nextcloud",
+          "description": "MariaDB User Name"
+        },
+        {
+          "name": "MYSQL_PASSWORD",
+          "default": "nextcloud",
+          "description": "MariaDB User Password"
+        },
+        {
+          "name": "MYSQL_DATABASE",
+          "default": "nextcloud",
+          "description": "MariaDB Databse Name"
+        }
+      ]
+    },
+    "templates": [
+      "docker-compose.yml.templ",
+      ".env.templ"
+    ]
   }
 ]
