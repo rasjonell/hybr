@@ -1,6 +1,7 @@
 package main
 
 import (
+	"fmt"
 	"hybr/internal/nginx"
 	"hybr/internal/services"
 	"os"
@@ -17,6 +18,12 @@ func main() {
 	InitCLI()
 	if _, err := NewProgram().Run(); err != nil {
 		os.Exit(1)
+	}
+
+	if !model.done {
+		fmt.Println("Service Installation Cancelled.")
+		fmt.Println("Nothing to do.")
+		os.Exit(0)
 	}
 
 	if err := nginx.Init(model.finalBaseConfig, flags.forceResetTemplates, flags.forceNoSSL); err != nil {

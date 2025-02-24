@@ -26,8 +26,13 @@ type Model struct {
 	finalBaseConfig     nginx.NginxConfig
 	baseConfigVariables []*services.VariableDefinition
 
+	done bool
+
 	cursor             int
 	activeServiceIndex int
+
+	height int
+	weight int
 }
 
 var model *Model
@@ -35,17 +40,17 @@ var model *Model
 func InitCLI() {
 	registeredServices := services.GetRegisteredServices()
 
-	step := StepBaseConfigInput
-	if flags.isBaseConfigComplete || flags.forceNoSSL {
-		step = StepServiceSelection
-	}
-
 	model = &Model{
 		cursor:              0,
-		step:                step,
+		done:                false,
 		services:            registeredServices,
+		step:                StepBaseConfigInput,
 		baseConfigVariables: getBaseConfigVariables(),
 		selected:            make(map[string]services.HybrService),
+	}
+
+	if flags.isBaseConfigComplete || flags.forceNoSSL {
+		model.initServiceSelection()
 	}
 }
 
@@ -69,11 +74,14 @@ func (m *Model) initInputs() {
 }
 
 func (m *Model) Init() tea.Cmd {
-	return nil
+	return tea.SetWindowTitle("Hybr CLI")
 }
 
 func (m *Model) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
 	switch msg := msg.(type) {
+	case tea.WindowSizeMsg:
+		m.weight = msg.Width
+		m.height = msg.Height
 	default:
 		switch m.step {
 		case StepBaseConfigInput:
@@ -129,6 +137,7 @@ func (m *Model) getCurrentVariables() []*services.VariableDefinition {
 }
 
 func (m *Model) buildFinalServices() {
+	m.done = true
 	for _, service := range m.selected {
 		for _, vars := range service.GetVariables() {
 			for _, v := range vars {
@@ -174,5 +183,5 @@ func (m *Model) getFinalServices() []services.HybrService {
 }
 
 func NewProgram() *tea.Program {
-	return tea.NewProgram(model)
+	return tea.NewProgram(model, tea.WithAltScreen())
 }

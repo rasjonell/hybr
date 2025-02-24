@@ -4,6 +4,7 @@ import (
 	"fmt"
 	"strings"
 
+	"github.com/charmbracelet/bubbles/key"
 	tea "github.com/charmbracelet/bubbletea"
 )
 
@@ -13,21 +14,29 @@ func (m *Model) updateBaseConfigInput(msg tea.Msg) (tea.Model, tea.Cmd) {
 
 	switch msg := msg.(type) {
 	case tea.KeyMsg:
-		switch msg.Type {
-		case tea.KeyEnter:
+		switch {
+		case key.Matches(msg, getVariableInputKeys(currentVar.Input.Value()).CtrlA):
+			if currentVar.Input.Value() == "" {
+				currentVar.Input.SetValue(currentVar.Default)
+			}
+			for i := m.cursor + 1; i < len(m.baseConfigVariables); i++ {
+				m.baseConfigVariables[i].Input.SetValue(m.baseConfigVariables[i].Default)
+			}
+			m.initServiceSelection()
+
+		case key.Matches(msg, getVariableInputKeys(currentVar.Input.Value()).Return):
 			if currentVar.Input.Value() == "" {
 				currentVar.Input.SetValue(currentVar.Default)
 			}
 			if m.cursor == len(m.baseConfigVariables)-1 {
-				m.cursor = 0
-				m.step = StepServiceSelection
+				m.initServiceSelection()
 			} else {
 				currentVar.Input.Blur()
 				m.cursor++
 				cmds = append(cmds, m.baseConfigVariables[m.cursor].Input.Focus())
 			}
 
-		case tea.KeyCtrlC, tea.KeyEsc:
+		case key.Matches(msg, getVariableInputKeys(currentVar.Input.Value()).Quit):
 			return m, tea.Quit
 		}
 	}
@@ -46,6 +55,9 @@ func (m *Model) viewBaseConfigInput() string {
 			"%d. %s = %s\n", i+1, v.Name, v.Input.View(),
 		))
 	}
+
+	currentVarValue := m.baseConfigVariables[m.cursor].Input.Value()
+	lines = append(lines, "\n", variableInputHelp.View(getVariableInputKeys(currentVarValue)))
 
 	return strings.Join(lines, "\n")
 
