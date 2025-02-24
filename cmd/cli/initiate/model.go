@@ -1,4 +1,4 @@
-package main
+package initiate
 
 import (
 	"hybr/internal/nginx"
@@ -17,39 +17,88 @@ const (
 )
 
 type Model struct {
+	Done            bool
+	FinalBaseConfig nginx.NginxConfig
+
 	step Step
 
 	selectedServiceNames []string
 	services             []services.HybrService
 	selected             map[string]services.HybrService
 
-	finalBaseConfig     nginx.NginxConfig
 	baseConfigVariables []*services.VariableDefinition
-
-	done bool
 
 	cursor             int
 	activeServiceIndex int
 
-	height int
-	weight int
+	height               int
+	weight               int
+	isBaseConfigComplete bool
+	email                string
+	domain               string
 }
 
 var model *Model
 
-func InitCLI() {
+func GetModel() *Model {
+	return model
+}
+
+func InitCLI(email, domain string, forceNoSSL bool) {
+	focusTaken := false
+	var vars []*services.VariableDefinition
+
+	if email == "" {
+		ti := buildTextInput("your@email.com")
+		if !focusTaken {
+			ti.Focus()
+			focusTaken = true
+		}
+
+		vars = append(vars, &services.VariableDefinition{
+			Input:       ti,
+			Name:        "Email",
+			Template:    "base-config",
+			Default:     "your@email.com",
+			Description: "Specify Your Email for SSL certificate generation",
+		})
+	}
+
+	if domain == "" {
+		ti := buildTextInput("localhost")
+		if !focusTaken {
+			ti.Focus()
+			focusTaken = true
+		}
+
+		vars = append(vars, &services.VariableDefinition{
+			Input:       ti,
+			Name:        "Domain",
+			Default:     "localhost",
+			Template:    "base-config",
+			Description: "Specify Base Domain Name",
+		})
+	}
+
 	registeredServices := services.GetRegisteredServices()
 
 	model = &Model{
-		cursor:              0,
-		done:                false,
-		services:            registeredServices,
-		step:                StepBaseConfigInput,
-		baseConfigVariables: getBaseConfigVariables(),
-		selected:            make(map[string]services.HybrService),
+		cursor:               0,
+		baseConfigVariables:  vars,
+		Done:                 false,
+		isBaseConfigComplete: false,
+		services:             registeredServices,
+		step:                 StepBaseConfigInput,
+		selected:             make(map[string]services.HybrService),
 	}
 
-	if flags.isBaseConfigComplete || flags.forceNoSSL {
+	if domain != "" && email != "" {
+		model.isBaseConfigComplete = true
+		model.email = email
+		model.domain = domain
+	}
+
+	if model.isBaseConfigComplete || forceNoSSL {
 		model.initServiceSelection()
 	}
 }
@@ -137,7 +186,7 @@ func (m *Model) getCurrentVariables() []*services.VariableDefinition {
 }
 
 func (m *Model) buildFinalServices() {
-	m.done = true
+	m.Done = true
 	for _, service := range m.selected {
 		for _, vars := range service.GetVariables() {
 			for _, v := range vars {
@@ -146,10 +195,10 @@ func (m *Model) buildFinalServices() {
 		}
 	}
 
-	if flags.isBaseConfigComplete {
-		m.finalBaseConfig = &nginx.ConfigImpl{
-			Email:  flags.email,
-			Domain: flags.domain,
+	if m.isBaseConfigComplete {
+		m.FinalBaseConfig = &nginx.ConfigImpl{
+			Email:  m.email,
+			Domain: m.domain,
 		}
 		return
 	}
@@ -171,10 +220,10 @@ func (m *Model) buildFinalServices() {
 			finalBaseConfig.Domain = val
 		}
 	}
-	m.finalBaseConfig = &finalBaseConfig
+	m.FinalBaseConfig = &finalBaseConfig
 }
 
-func (m *Model) getFinalServices() []services.HybrService {
+func (m *Model) GetFinalServices() []services.HybrService {
 	finalServices := make([]services.HybrService, 0)
 	for _, s := range m.selected {
 		finalServices = append(finalServices, s)
