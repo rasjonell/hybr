@@ -2,6 +2,16 @@
 
 All notable changes to this project will be documented in this file.
 
+## [unreleased]
+
+### ⚡ CLI
+
+- [CLI] Create (Sub)Commands
+
+### 🏃 Executables
+
+- [Exec] Add Git-Cliff Changelog Generator
+
 ## [0.0.1] - 2025-02-24
 
 ### 🚀 Services
@@ -51,6 +61,11 @@ All notable changes to this project will be documented in this file.
 
 - [CLI] Add Helper Footer
 
+### 🏃 Executables
+
+- [Exec] Update Release script
+- [Exec] Update tmux session
+
 ### 💼 Other
 
 - Init
@@ -78,8 +93,6 @@ All notable changes to this project will be documented in this file.
 - Add Domain/Email input for nginx + ssl
 - Add SSL/certbot integration
 - Update executables
-- [Exec] Update Release script
-- [Exec] Update tmux session
 - Add Todos
 - Service Interface Refactor
 - Update Todos

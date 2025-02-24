@@ -24,6 +24,8 @@ body = """
 footer = """
 <!-- built with ❤️ -->
 """
+
+initial_tag="0.0.1"
 trim = true
 postprocessors = []
 render_always = true

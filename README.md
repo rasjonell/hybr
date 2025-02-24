@@ -49,4 +49,6 @@ Full documentation *will be* available at docs.hybr.dev
 
 Check out my TODOs and past progress here: [TODO.md](https://github.com/rasjonell/hybr/blob/master/TODO.md)
 
+[Changelog](https://github.com/rasjonell/hybr/blob/master/CHANGELOG.md)
+
 Made with ❤️ 
