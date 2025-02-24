@@ -4,3 +4,4 @@
 /cmd/server/static/css/tailwind.css
 /cmd/server/node_modules
 /cmd/server/bin
+/CHANGELOG.md
