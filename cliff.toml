@@ -1,0 +1,50 @@
+[changelog]
+
+header = """
+# Changelog\n
+All notable changes to this project will be documented in this file.\n
+"""
+
+body = """
+{% if version %}\
+    ## [{{ version | trim_start_matches(pat="v") }}] - {{ timestamp | date(format="%Y-%m-%d") }}
+{% else %}\
+    ## [unreleased]
+{% endif %}\
+{% for group, commits in commits | group_by(attribute="group") %}
+    ### {{ group | striptags | trim | upper_first }}
+    {% for commit in commits %}
+        - {% if commit.scope %}*({{ commit.scope }})* {% endif %}\
+            {% if commit.breaking %}[**breaking**] {% endif %}\
+            {{ commit.message | upper_first }}\
+    {% endfor %}
+{% endfor %}\n
+"""
+
+footer = """
+<!-- built with ❤️ -->
+"""
+trim = true
+postprocessors = []
+render_always = true
+output = "CHANGELOG.md"
+
+[git]
+
+split_commits = false
+conventional_commits = false
+filter_unconventional = false
+
+commit_preprocessors = []
+commit_parsers = [
+  { message = "^\\[Service\\]", group = "<!-- 0 -->🚀 Services" },
+  { message = "^\\[Internal\\]", group = "<!-- 1 -->💼 Internal" },
+  { message = "^(\\[Server\\])|(\\[Web\\])|(\\[UI\\])", group = "<!-- 3 -->🤖 Server/Web UI" },
+  { message = "^\\[CLI\\]", group = "<!-- 4 -->⚡ CLI" },
+  { message = "^\\[Exec\\]", group = "<!-- 4 -->🏃 Executables" },
+  { message = ".*", group = "<!-- 5 -->💼 Other" },
+]
+
+filter_commits = false
+topo_order = false
+sort_commits = "oldest"
