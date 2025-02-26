@@ -1,6 +1,19 @@
 # To Do
 
+- [ ] Docs
+    - [ ] Figure out a proper way to host docs
+    - [ ] Documentation generator
+
+- [ ] CLI Improvements
+    - [ ] Usefull flags(verbose, accept-all)
+    - [ ] Sync {initial, post install} services with a local machine
+    - [ ] Expose Web Service Managment APIs to the CLI
+
 # Done
+
+- [x] CLI Subcommands
+    - [x] Integrate Cobra (Add `hybr version`, shell completions)
+    - [x] Require root privileges for relevant subcommands
 
 - [x] Nextcloud service templates
 
@@ -29,7 +42,7 @@
     - [x] Persistent Service Installations
     - [x] Client-Side Service Info + Realtime Logs
 
-# Before v1
+# Before v0.1
 
 - [ ] Use minified HTMX (check for local/prod?)
 - [ ] Include install.sh checksum in README
