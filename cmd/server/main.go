@@ -2,6 +2,7 @@ package main
 
 import (
 	"hybr/cmd/server/routes"
+	"hybr/internal/services"
 	"log"
 	"net/http"
 
@@ -24,6 +25,8 @@ func main() {
 	routes.InitServicesRouter(
 		router.PathPrefix("/services").Subrouter(),
 	)
+
+	services.GetRegistry().RegisterServiceEvents()
 
 	log.Fatal(http.ListenAndServe(":8080", router))
 }
