@@ -16,7 +16,7 @@ const (
 	HybrDir = "/var/lib/hybr"
 )
 
-func getWorkingDirectory() string {
+func GetHybrDirectory() string {
 	if path := os.Getenv("HYBR_DIR"); path != "" {
 		return path
 	}
@@ -24,7 +24,7 @@ func getWorkingDirectory() string {
 }
 
 func cleanWorkingDirectory() error {
-	if err := os.RemoveAll(getWorkingDirectory()); err != nil {
+	if err := os.RemoveAll(GetHybrDirectory()); err != nil {
 		return err
 	}
 
@@ -32,7 +32,7 @@ func cleanWorkingDirectory() error {
 }
 
 func initWorkingDirectory() error {
-	if err := os.MkdirAll(filepath.Join(getWorkingDirectory(), "services"), 0755); err != nil {
+	if err := os.MkdirAll(filepath.Join(GetHybrDirectory(), "services"), 0755); err != nil {
 		return err
 	}
 
@@ -53,7 +53,7 @@ func InstallServices(selected []HybrService, bc nginx.NginxConfig) (err error) {
 	ir := GetRegistry()
 
 	for _, service := range selected {
-		serviceDir := filepath.Join(getWorkingDirectory(), "services", service.GetName())
+		serviceDir := filepath.Join(GetHybrDirectory(), "services", service.GetName())
 
 		var port string
 		port, err = installTemplates(service, service.GetName())
@@ -106,11 +106,19 @@ func InstallServices(selected []HybrService, bc nginx.NginxConfig) (err error) {
 }
 
 func RestartService(serviceName string) error {
-	serviceDir := filepath.Join(getWorkingDirectory(), "services", serviceName)
 	if err := StopService(serviceName); err != nil {
 		return err
 	}
 
+	if err := StartService(serviceName); err != nil {
+		return err
+	}
+
+	return nil
+}
+
+func StartService(serviceName string) error {
+	serviceDir := filepath.Join(GetHybrDirectory(), "services", serviceName)
 	cmd := exec.Command("sh", "-c", "docker compose up -d")
 	cmd.Dir = serviceDir
 	if err := nginx.PipeCmdToStdout(cmd, "docker"); err != nil {
@@ -121,7 +129,7 @@ func RestartService(serviceName string) error {
 }
 
 func StopService(serviceName string) error {
-	serviceDir := filepath.Join(getWorkingDirectory(), "services", serviceName)
+	serviceDir := filepath.Join(GetHybrDirectory(), "services", serviceName)
 	cmd := exec.Command("sh", "-c", "docker compose down -v")
 	cmd.Dir = serviceDir
 	if err := nginx.PipeCmdToStdout(cmd, "docker"); err != nil {
@@ -131,7 +139,7 @@ func StopService(serviceName string) error {
 }
 
 func installTemplates(service HybrService, serviceName string) (string, error) {
-	serviceDir := filepath.Join(getWorkingDirectory(), "services", serviceName)
+	serviceDir := filepath.Join(GetHybrDirectory(), "services", serviceName)
 	servicePath := filepath.Join(serviceDir, "templates")
 	var port string
 	err := filepath.Walk(servicePath, func(path string, info os.FileInfo, err error) error {
@@ -174,7 +182,7 @@ func installTemplates(service HybrService, serviceName string) (string, error) {
 }
 
 func reinstallTemplates(service HybrService, serviceName string) error {
-	serviceDir := filepath.Join(getWorkingDirectory(), "services", serviceName)
+	serviceDir := filepath.Join(GetHybrDirectory(), "services", serviceName)
 	servicePath := filepath.Join(serviceDir, "templates")
 	return filepath.Walk(servicePath, func(path string, info os.FileInfo, err error) error {
 		if err != nil {
@@ -211,7 +219,7 @@ func reinstallTemplates(service HybrService, serviceName string) error {
 }
 
 func runInstallCommand(serviceName string, installation *serviceImpl) error {
-	serviceDir := filepath.Join(getWorkingDirectory(), "services", serviceName)
+	serviceDir := filepath.Join(GetHybrDirectory(), "services", serviceName)
 	cmd := exec.Command("sh", "-c", "docker compose up -d")
 	cmd.Dir = serviceDir
 

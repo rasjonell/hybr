@@ -38,12 +38,9 @@ func GetRegistry() *InstallationRegistry {
 	once.Do(func() {
 		installationRegistry = &InstallationRegistry{
 			installations: make(map[string]*serviceImpl),
-			stateFile:     filepath.Join(getWorkingDirectory(), "installations.json"),
+			stateFile:     filepath.Join(GetHybrDirectory(), "installations.json"),
 		}
 		installationRegistry.load()
-		for name := range installationRegistry.installations {
-			RegisterEventSources(name)
-		}
 	})
 
 	return installationRegistry
@@ -74,6 +71,12 @@ func (r *InstallationRegistry) save() error {
 	}
 
 	return os.WriteFile(r.stateFile, data, 0644)
+}
+
+func (r *InstallationRegistry) RegisterServiceEvents() {
+	for name := range installationRegistry.installations {
+		RegisterEventSources(name)
+	}
 }
 
 func (r *InstallationRegistry) AddInstallation(service *serviceImpl) error {
@@ -124,11 +127,11 @@ func (r *InstallationRegistry) UpdateComponent(name string, component *docker.Co
 	return r.save()
 }
 
-func (r *InstallationRegistry) ListInstallations() []*serviceImpl {
+func (r *InstallationRegistry) ListInstallations() []HybrService {
 	r.mu.RLock()
 	defer r.mu.RUnlock()
 
-	services := make([]*serviceImpl, 0, len(r.installations))
+	services := make([]HybrService, 0, len(r.installations))
 	for _, service := range r.installations {
 		services = append(services, service)
 	}

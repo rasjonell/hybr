@@ -65,7 +65,7 @@ func (m *ServiceLogMonitor) Start(doneChan <-chan struct{}, logChan chan<- *orch
 		"--no-color",
 		"--tail", "10",
 	)
-	cmd.Dir = filepath.Join(getWorkingDirectory(), "services", m.ServiceName)
+	cmd.Dir = filepath.Join(GetHybrDirectory(), "services", m.ServiceName)
 
 	stdout, err := cmd.StdoutPipe()
 	if err != nil {
@@ -99,6 +99,7 @@ func (m *ServiceStatusMonitor) Start(doneChan <-chan struct{}, eventChan chan<- 
 			return
 		default:
 			ir := GetRegistry()
+			fmt.Println("Service " + m.ServiceName + " Status is " + ir.installations[m.ServiceName].Status)
 			eventChan <- orchestration.ToEventData(m.EventType, ir.installations[m.ServiceName].Status)
 			time.Sleep(1 * time.Second)
 		}

@@ -42,7 +42,6 @@ func (sm *SubscriptionManager) RegisterEventSource(eventType EventType, source E
 		return fmt.Errorf("Event source already registered for event type %s\n", eventType)
 	}
 
-	fmt.Printf("Registering event source for %s\n", eventType)
 	sm.eventSources[eventType] = source
 
 	return nil

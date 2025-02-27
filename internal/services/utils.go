@@ -21,7 +21,7 @@ func GetInstalledServices() []string {
 	mu.RLock()
 	defer mu.RUnlock()
 
-	servicesDir := filepath.Join(getWorkingDirectory(), "services")
+	servicesDir := filepath.Join(GetHybrDirectory(), "services")
 
 	var installedServices []string
 	if _, err := os.Stat(servicesDir); os.IsNotExist(err) {

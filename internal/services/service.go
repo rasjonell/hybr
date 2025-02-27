@@ -123,8 +123,8 @@ func initializeServices() []*serviceImpl {
 	var err error = nil
 	var services []*serviceImpl
 
-	servicesPath := filepath.Join(getWorkingDirectory(), "services")
-	destPath := filepath.Join(getWorkingDirectory(), "services.json")
+	servicesPath := filepath.Join(GetHybrDirectory(), "services")
+	destPath := filepath.Join(GetHybrDirectory(), "services.json")
 
 	_, err = os.Stat(destPath)
 	if err == nil {

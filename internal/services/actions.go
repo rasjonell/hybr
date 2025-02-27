@@ -44,6 +44,43 @@ func Stop(serviceName string) {
 	)
 }
 
+func Start(serviceName string) {
+	orchestration.SendInfoNotification(
+		fmt.Sprintf("Starting %s Service", strings.ToTitle(serviceName)),
+	)
+
+	service, err := initServiceAction(serviceName, "starting")
+	if err != nil {
+		orchestration.SendErrorNotification(
+			fmt.Sprintf("%s", err.Error()),
+		)
+		return
+	}
+
+	if err := StartService(serviceName); err != nil {
+		orchestration.SendErrorNotification(
+			fmt.Sprintf("%s", err.Error()),
+		)
+		return
+	}
+
+	service.Status = "running"
+	for _, c := range service.Components {
+		c.Status = "running"
+	}
+
+	if err := installationRegistry.save(); err != nil {
+		orchestration.SendErrorNotification(
+			fmt.Sprintf("%s", err.Error()),
+		)
+		return
+	}
+
+	orchestration.SendSuccessNotification(
+		fmt.Sprintf("%s Service Started", strings.ToTitle(serviceName)),
+	)
+}
+
 func Restart(serviceName string) {
 	orchestration.SendInfoNotification(
 		fmt.Sprintf("Restarting %s Service", strings.ToTitle(serviceName)),
