@@ -5,9 +5,14 @@
     - [ ] Documentation generator
 
 - [ ] CLI Improvements
+    - [] Expose Web Service Managment APIs to the CLI
+        - [x] List Services
+        - [x] Info/Components
+        - [x] Start/Stop
+        - [x] Logs
+        - [ ] Variable Edit
     - [ ] Usefull flags(verbose, accept-all)
     - [ ] Sync {initial, post install} services with a local machine
-    - [ ] Expose Web Service Managment APIs to the CLI
 
 # Done
 
