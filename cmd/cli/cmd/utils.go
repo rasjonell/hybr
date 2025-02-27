@@ -2,6 +2,7 @@ package cmd
 
 import (
 	"fmt"
+	"hybr/internal/services"
 	"os"
 	"os/exec"
 	"strconv"
@@ -26,7 +27,29 @@ func checkRootPermissions(msgs ...string) {
 	}
 
 	if i != 0 {
-		fmt.Printf(msg + "\n\tsudo hybr init\n\n")
+		fmt.Printf(msg + "\n\tsudo hybr [command]\n\n")
 		os.Exit(1)
 	}
+}
+
+func getService(serviceName string) (services.HybrService, error) {
+	reg := services.GetRegistry()
+	is, exists := reg.GetInstallation(serviceName)
+	if !exists {
+		return nil, fmt.Errorf(`No service installed with the given name: %s
+To see the list of services run:
+      hybr services
+`, serviceCmdFlags.service)
+	}
+
+	return is, nil
+}
+
+func displayStatusIcon(status string) string {
+	statusIcon := "✅"
+	if status != "running" {
+		statusIcon = "🛑"
+	}
+
+	return statusIcon
 }
