@@ -2,7 +2,8 @@
 
 ROOT="$(pwd)"
 
-mkdir -p .releases
+rm -rf "$ROOT/.releases"
+mkdir -p "$ROOT/.releases"
 
 GOOS=linux GOARCH=amd64 go build -ldflags="-s -w" -o $ROOT/.releases/hybr hybr/cmd/cli && \
   upx $ROOT/.releases/hybr
@@ -10,5 +11,8 @@ GOOS=linux GOARCH=amd64 go build -ldflags="-s -w" -o $ROOT/.releases/hybr hybr/c
 cd cmd/server && \
   templ generate && \
   npm run build && \
-  GOOS=linux GOARCH=amd64 go build -ldflags="-s -w" -o $ROOT/.releases/hybr-server hybr/cmd/server && \
-  upx $ROOT/.releases/hybr-server
+  GOOS=linux GOARCH=amd64 go build -ldflags="-s -w" -o $ROOT/.releases/hybr-console hybr/cmd/server && \
+  upx $ROOT/.releases/hybr-console
+
+chmod +x "$ROOT/.releases/hybr"
+chmod +x "$ROOT/.releases/hybr-console"

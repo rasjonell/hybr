@@ -1,3 +1,14 @@
 #!/bin/sh
 
-./bin/release && scp .releases/hybr rasjonell@rasjonell.info:/usr/local/bin
+./bin/release 
+
+ssh root@vultr 'mkdir -p ~/temp_bin'
+
+scp .releases/hybr* root@vultr:~/temp_bin/
+scp install.sh root@vultr:~/
+
+ssh root@vultr 'mv ~/temp_bin/hybr* /usr/local/bin/ && chmod +x /usr/local/bin/hybr*'
+ssh root@vultr 'rm -rf ~/temp_bin'
+
+echo "Successfully deployed binaries to VPS"
+
