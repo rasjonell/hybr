@@ -1,11 +1,6 @@
 package view
 
-import (
-	"hybr/cmd/server/view/components"
-	"hybr/internal/services"
-)
-
-var installedService []string = services.GetInstalledServices()
+import "hybr/cmd/server/view/components"
 
 templ Index() {
 	<h1 class="text-3xl font-bold mb-8 text-gray-800">Hybr Dashboard</h1>

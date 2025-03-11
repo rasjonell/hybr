@@ -1,6 +1,9 @@
 package components
 
-import "fmt"
+import (
+  "fmt"
+  "hybr/cmd/server/config"
+)
 
 func getProgressStyle(usage string) string {
   return fmt.Sprintf("width: %s%%", usage)
@@ -24,7 +27,7 @@ templ Usage(title string, usage string) {
 templ Usages() {
   <div
     hx-ext="sse"
-    sse-connect="/usage"
+    sse-connect={config.BuildHostURL("/usage")}
     class="grid grid-cols-1 md:grid-cols-3 gap-6"
   >
     <div class="bg-white p-6 rounded-lg shadow-md hover:shadow-lg transition-shadow duration-300" sse-swap="cpu">

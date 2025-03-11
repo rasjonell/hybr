@@ -2,6 +2,7 @@ package view
 
 import (
 	"fmt"
+	"hybr/cmd/server/config"
 	"hybr/cmd/server/view/components"
 	"hybr/cmd/server/view/icons"
 	"hybr/internal/services"
@@ -61,7 +62,7 @@ templ Service(serviceName string, activeTab int, isEdit bool) {
 			<button
 				hx-swap="none"
 				title="Restart The Service"
-				hx-post={ "/services/" + serviceName + "/restart" }
+				hx-post={ config.BuildHostURL("/services/" + serviceName + "/restart") }
 				class="cursor-pointer p-2 rounded-md transition duration-200 bg-orange-400 hover:bg-orange-600 active:bg-orange-700 group"
 			>
 				@icons.Restart("h-5 w-5")
@@ -69,7 +70,7 @@ templ Service(serviceName string, activeTab int, isEdit bool) {
 			<button
 				hx-swap="none"
 				title="Stop The Service"
-				hx-post={ "/services/" + serviceName + "/stop" }
+				hx-post={ config.BuildHostURL("/services/" + serviceName + "/stop") }
 				class="cursor-pointer p-2 rounded-md transition duration-200 bg-red-600 hover:bg-red-700 active:bg-red-900 group"
 			>
 				@icons.Stop("h-5 w-5")
@@ -79,7 +80,7 @@ templ Service(serviceName string, activeTab int, isEdit bool) {
 	<div class="mb-6 flex space-x-2">
 		for tab, title := range tabs {
 			<a
-				href={ templ.URL(fmt.Sprintf("/services/%s?tab=%d", serviceName, tab)) }
+				href={ config.BuildSafeURL(fmt.Sprintf("/services/%s?tab=%d", serviceName, tab)) }
 				class={ getClass(tab, activeTab) }
 			>
 				{ title }
