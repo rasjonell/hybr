@@ -99,7 +99,6 @@ func (m *ServiceStatusMonitor) Start(doneChan <-chan struct{}, eventChan chan<- 
 			return
 		default:
 			ir := GetRegistry()
-			fmt.Println("Service " + m.ServiceName + " Status is " + ir.installations[m.ServiceName].Status)
 			eventChan <- orchestration.ToEventData(m.EventType, ir.installations[m.ServiceName].Status)
 			time.Sleep(1 * time.Second)
 		}

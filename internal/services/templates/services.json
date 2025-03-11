@@ -1,8 +1,8 @@
 [
   {
-    "name": "rss",
+    "name": "tt-rss",
     "description": "Tiny Tiny RSS - Self-hosted news feed aggregator",
-    "subDomain": true,
+    "tailscaleProxy": "tt-rss",
     "variables": {
       ".env.templ": [
         {
@@ -25,7 +25,7 @@
   {
     "name": "nextcloud",
     "description": "Nextcloud - Personal Cloud Provider",
-    "subDomain": true,
+    "isRoot": true,
     "variables": {
       ".env.templ": [
         {
