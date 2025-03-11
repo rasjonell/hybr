@@ -1,7 +1,6 @@
 package initiate
 
 import (
-	"hybr/internal/nginx"
 	"hybr/internal/services"
 
 	tea "github.com/charmbracelet/bubbletea"
@@ -10,15 +9,14 @@ import (
 type Step int
 
 const (
-	StepBaseConfigInput Step = iota
+	StepTailscaleInput Step = iota
 	StepServiceSelection
 	StepVariableInput
 	StepConfirmation
 )
 
 type Model struct {
-	Done            bool
-	FinalBaseConfig nginx.NginxConfig
+	Done bool
 
 	step Step
 
@@ -26,16 +24,11 @@ type Model struct {
 	services             []services.HybrService
 	selected             map[string]services.HybrService
 
-	baseConfigVariables []*services.VariableDefinition
-
 	cursor             int
 	activeServiceIndex int
 
-	height               int
-	weight               int
-	isBaseConfigComplete bool
-	email                string
-	domain               string
+	height int
+	weight int
 }
 
 var model *Model
@@ -44,61 +37,18 @@ func GetModel() *Model {
 	return model
 }
 
-func InitCLI(email, domain string, forceNoSSL bool) {
-	focusTaken := false
-	var vars []*services.VariableDefinition
-
-	if email == "" {
-		ti := buildTextInput("your@email.com")
-		if !focusTaken {
-			ti.Focus()
-			focusTaken = true
-		}
-
-		vars = append(vars, &services.VariableDefinition{
-			Input:       ti,
-			Name:        "Email",
-			Template:    "base-config",
-			Default:     "your@email.com",
-			Description: "Specify Your Email for SSL certificate generation",
-		})
-	}
-
-	if domain == "" {
-		ti := buildTextInput("localhost")
-		if !focusTaken {
-			ti.Focus()
-			focusTaken = true
-		}
-
-		vars = append(vars, &services.VariableDefinition{
-			Input:       ti,
-			Name:        "Domain",
-			Default:     "localhost",
-			Template:    "base-config",
-			Description: "Specify Base Domain Name",
-		})
-	}
-
+func InitCLI() {
 	registeredServices := services.GetRegisteredServices()
 
 	model = &Model{
-		cursor:               0,
-		baseConfigVariables:  vars,
-		Done:                 false,
-		isBaseConfigComplete: false,
-		services:             registeredServices,
-		step:                 StepBaseConfigInput,
-		selected:             make(map[string]services.HybrService),
+		cursor:   0,
+		Done:     false,
+		services: registeredServices,
+		step:     StepTailscaleInput,
+		selected: make(map[string]services.HybrService),
 	}
 
-	if domain != "" && email != "" {
-		model.isBaseConfigComplete = true
-		model.email = email
-		model.domain = domain
-	}
-
-	if model.isBaseConfigComplete || forceNoSSL {
+	if true /* check for tailscale auth key */ {
 		model.initServiceSelection()
 	}
 }
@@ -133,8 +83,8 @@ func (m *Model) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
 		m.height = msg.Height
 	default:
 		switch m.step {
-		case StepBaseConfigInput:
-			return m.updateBaseConfigInput(msg)
+		case StepTailscaleInput:
+			return m, nil
 
 		case StepServiceSelection:
 			return m.updateServiceSelection(msg)
@@ -152,8 +102,8 @@ func (m *Model) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
 
 func (m *Model) View() string {
 	switch m.step {
-	case StepBaseConfigInput:
-		return m.viewBaseConfigInput()
+	case StepTailscaleInput:
+		return "Tailscale"
 
 	case StepServiceSelection:
 		return m.viewServiceSelection()
@@ -194,33 +144,6 @@ func (m *Model) buildFinalServices() {
 			}
 		}
 	}
-
-	if m.isBaseConfigComplete {
-		m.FinalBaseConfig = &nginx.ConfigImpl{
-			Email:  m.email,
-			Domain: m.domain,
-		}
-		return
-	}
-
-	var finalBaseConfig nginx.ConfigImpl
-	for _, def := range m.baseConfigVariables {
-		switch def.Name {
-		case "Email":
-			val := def.Input.Value()
-			if val == "" {
-				val = def.Default
-			}
-			finalBaseConfig.Email = val
-		case "Domain":
-			val := def.Input.Value()
-			if val == "" {
-				val = def.Default
-			}
-			finalBaseConfig.Domain = val
-		}
-	}
-	m.FinalBaseConfig = &finalBaseConfig
 }
 
 func (m *Model) GetFinalServices() []services.HybrService {

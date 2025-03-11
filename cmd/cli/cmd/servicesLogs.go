@@ -2,8 +2,8 @@ package cmd
 
 import (
 	"fmt"
-	"hybr/internal/nginx"
 	"hybr/internal/services"
+	"hybr/internal/system"
 	"os/exec"
 	"path/filepath"
 
@@ -47,5 +47,5 @@ func logService(_ *cobra.Command, args []string) {
 	)
 	cmd.Dir = filepath.Join(services.GetHybrDirectory(), "services", is.GetName())
 
-	nginx.PipeCmdToStdout(cmd, is.GetName())
+	system.PipeCmdToStdout(cmd, is.GetName())
 }
