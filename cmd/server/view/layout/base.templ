@@ -1,11 +1,13 @@
 package layout
 
 import (
+	"hybr/cmd/server/config"
 	"hybr/cmd/server/view/components"
+	"hybr/cmd/server/view/icons"
 	"hybr/internal/services"
 )
 
-var installedServices []string = services.GetInstalledServices()
+var installedServices []string = services.ListInstalledServiceNames()
 
 templ Base(children ...templ.Component) {
 	<!DOCTYPE html>
@@ -14,7 +16,7 @@ templ Base(children ...templ.Component) {
 			<meta charset="UTF-8"/>
 			<meta name="viewport" content="width=device-width, initial-scale=1.0"/>
 			<title>Hybr Portal</title>
-			<link href="/static/css/tailwind.css" rel="stylesheet"/>
+			<link href={ config.BuildHostURL("static/css/tailwind.css") } rel="stylesheet"/>
 			<style>
         @import url('https://fonts.googleapis.com/css2?family=Inter:ital,opsz,wght@0,14..32,100..900;1,14..32,100..900&display=swap');
         body {
@@ -25,44 +27,74 @@ templ Base(children ...templ.Component) {
 		<body
 			class="bg-gray-50 text-gray-900"
 		>
-			<div
-				class="flex h-screen"
-			>
-				<!-- SideBar -->
-				<div class="bg-white text-gray-800 w-64 space-y-6 py-7 px-2 absolute inset-y-0 left-0 transform -translate-x-full md:relative md:translate-x-0 transition duration-200 ease-in-out shadow-lg">
-					<a href="/" class="flex items-center space-x-2 px-4">
-						<svg class="w-8 h-8 text-blue-600" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
-							<path d="M3 13h8V3H3v10zm0 8h8v-6H3v6zm10 0h8V11h-8v10zm0-18v6h8V3h-8z" fill="currentColor"></path>
-						</svg>
-						<span class="text-2xl font-extrabold bg-gradient-to-r from-blue-600 to-purple-600 text-transparent bg-clip-text">
-							Hybr
-						</span>
-					</a>
-					<nav>
-						<a
-							href="/"
-							class="block py-2.5 px-4 rounded transition duration-200 hover:bg-gray-100 hover:text-blue-600"
+			<div class="flex h-screen">
+				<div
+					id="sidebar"
+					class="bg-white text-gray-800 fixed inset-y-0 left-0 transform transition duration-200 ease-in-out shadow-lg z-20
+                    w-16 lg:w-64"
+				>
+					<div class="py-7 px-1 space-y-6">
+						<button
+							id="expand-icon"
+							class="py-2.5 px-4 cursor-pointer hover:bg-gray-100 flex items-center justify-center lg:hidden"
+							onclick="toggleSidebar()"
 						>
-							Home
-						</a>
-						<div class="my-4 bg-gray-200 h-[1px]"></div>
-						<p
-							class="block py-2.5 px-4 rounded font-bold"
-						>
-							Services
-						</p>
-						for _, service := range installedServices {
-							<a
-								key={ service }
-								href={ templ.URL("/services/" + service) }
-								class="block py-2.5 px-4 rounded transition duration-200 hover:bg-gray-100 hover:text-blue-600"
-							>
-								{ service }
+							@icons.Expand("h-6 w-6")
+						</button>
+						<div class="flex items-center justify-between w-full">
+							<a href={ config.BuildSafeURL("/") } class="px-4">
+								<span class="text-2xl font-extrabold bg-gradient-to-r from-blue-600 to-purple-600 text-transparent bg-clip-text hidden lg:inline sidebar-text">
+									Hybr
+								</span>
 							</a>
-						}
-					</nav>
+							<button
+								id="collapse-icon"
+								class="py-2.5 px-4 cursor-pointer hover:bg-gray-100 flex items-center justify-center hidden lg:hidden"
+								onclick="toggleSidebar()"
+							>
+								@icons.Collapse("h-6 w-6")
+							</button>
+						</div>
+						<nav>
+							<a
+								href={ config.BuildSafeURL("/") }
+								class="flex items-center py-2.5 px-4 rounded transition duration-200 hover:bg-gray-100 hover:text-blue-600 group"
+							>
+								<div class="flex-shrink-0">
+									@icons.Home("h-6 w-6")
+								</div>
+								<span class="ml-2 hidden lg:inline whitespace-nowrap sidebar-text">
+									Home
+								</span>
+								<span class="ml-2 absolute left-full rounded bg-gray-800 text-white px-2 py-1 text-xs hidden group-hover:block lg:group-hover:hidden transform translate-x-2 opacity-0 group-hover:opacity-100 pointer-events-none transition-opacity">Home</span>
+							</a>
+							<div class="my-4 bg-gray-200 h-[1px]"></div>
+							<p
+								class="py-2.5 px-4 rounded font-bold hidden lg:block sidebar-text"
+							>
+								Services
+							</p>
+							for _, service := range installedServices {
+								<a
+									key={ service }
+									title={ service }
+									href={ config.BuildSafeURL("/services/" + service) }
+									class="flex items-center py-2.5 px-4 rounded transition duration-200 hover:bg-gray-100 hover:text-blue-600 group"
+								>
+									<div class="flex-shrink-0">
+										@icons.Terminal("h-6 w-6")
+									</div>
+									<span class="ml-2 hidden lg:inline whitespace-nowrap overflow-hidden text-ellipsis sidebar-text">
+										{ service }
+									</span>
+									<span class="ml-2 absolute left-full rounded bg-gray-800 text-white px-2 py-1 text-xs hidden group-hover:block lg:group-hover:hidden transform translate-x-2 opacity-0 group-hover:opacity-100 pointer-events-none transition-opacity">{ service }</span>
+								</a>
+							}
+						</nav>
+					</div>
 				</div>
-				<main class="flex-1 overflow-x-hidden overflow-y-auto bg-gray-50 p-6">
+				<!-- Main content with appropriate padding -->
+				<main id="main-content" class="flex-1 overflow-x-hidden overflow-y-auto bg-gray-50 p-6 ml-16 lg:ml-64 transition-all duration-200">
 					for _, child := range children {
 						<div class="max-w-7x1 mx-auto">
 							@child
@@ -72,16 +104,17 @@ templ Base(children ...templ.Component) {
 				<div
 					hx-ext="sse"
 					sse-swap="notification"
-					sse-connect="/notifications"
+					sse-connect={ config.BuildHostURL("/notifications") }
 				>
 					@components.Notification("", "")
 				</div>
 			</div>
 			<script src="https://unpkg.com/htmx.org@2.0.4/dist/htmx.js" integrity="sha384-oeUn82QNXPuVkGCkcrInrS1twIxKhkZiFfr2TdiuObZ3n3yIeMiqcRzkIcguaof1" crossorigin="anonymous"></script>
 			<script src="https://unpkg.com/htmx-ext-sse@2.2.2/sse.js"></script>
-			<script src="/js/logs.js"></script>
-			<script src="/js/chip.js"></script>
-			<script src="/js/notification.js"></script>
+			<script src={ config.BuildHostURL("/js/sidebar.js") }></script>
+			<script src={ config.BuildHostURL("/js/notification.js") }></script>
+			<script src={ config.BuildHostURL("/js/logs.js") }></script>
+			<script src={ config.BuildHostURL("/js/chip.js") }></script>
 		</body>
 	</html>
 }
