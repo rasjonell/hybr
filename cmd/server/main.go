@@ -1,32 +1,53 @@
 package main
 
 import (
+	"embed"
+	"hybr/cmd/server/config"
 	"hybr/cmd/server/routes"
 	"hybr/internal/services"
+	"io/fs"
 	"log"
 	"net/http"
 
 	"github.com/gorilla/mux"
 )
 
+//go:embed static/* view/js/*
+var embeddedFiles embed.FS
+
 func main() {
 	router := mux.NewRouter()
 
-	fs := http.FileServer(http.Dir("./static"))
-	router.PathPrefix("/static").Handler(http.StripPrefix("/static", fs))
+	var baseRouter *mux.Router = router
+	hostPrefix := config.GetHostPrefix()
+	baseRouter = router.PathPrefix(hostPrefix).Subrouter().StrictSlash(true)
 
-	jsFs := http.FileServer(http.Dir("./view/js"))
-	router.PathPrefix("/js").Handler(http.StripPrefix("/js", jsFs))
+	staticFS, _ := fs.Sub(embeddedFiles, "static")
+	baseRouter.PathPrefix("/static").Handler(http.StripPrefix(
+		config.BuildHostURL("/static"),
+		http.FileServer(http.FS(staticFS)),
+	))
+
+	jsFS, _ := fs.Sub(embeddedFiles, "view/js")
+	baseRouter.PathPrefix("/js").Handler(http.StripPrefix(
+		config.BuildHostURL("/js"),
+		http.FileServer(http.FS(jsFS)),
+	))
 
 	routes.InitHomeRouter(
-		router.PathPrefix("/").Subrouter(),
+		baseRouter,
 	)
 
 	routes.InitServicesRouter(
-		router.PathPrefix("/services").Subrouter(),
+		baseRouter.PathPrefix("/services").Subrouter().StrictSlash(true),
 	)
+
+	baseRouter.PathPrefix("/").HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
+		log.Printf("Unhandled route: %s %s", r.Method, r.URL.Path)
+		http.NotFound(w, r)
+	})
 
 	services.GetRegistry().RegisterServiceEvents()
 
-	log.Fatal(http.ListenAndServe(":8080", router))
+	log.Fatal(http.ListenAndServe(":8080", baseRouter))
 }

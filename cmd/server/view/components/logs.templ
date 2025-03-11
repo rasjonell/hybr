@@ -1,5 +1,7 @@
 package components
 
+import "hybr/cmd/server/config"
+
 templ Log(log string) {
 	<p class="mb-1">
 		<pre class="font-mono">{ log }</pre>
@@ -16,7 +18,7 @@ templ Logs(serviceName string) {
 			id="log-list"
 			hx-swap="beforeend"
 			sse-swap="log"
-			sse-connect={ "/services/" + serviceName + "/logs" }
+			sse-connect={ config.BuildHostURL("/services/" + serviceName + "/logs") }
 		></div>
 		<div class="flex justify-end">
 			<button

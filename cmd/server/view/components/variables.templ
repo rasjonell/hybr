@@ -2,6 +2,7 @@ package components
 
 import (
 	"fmt"
+	"hybr/cmd/server/config"
 	"hybr/cmd/server/view/icons"
 	"hybr/internal/services"
 )
@@ -18,7 +19,7 @@ templ Variables(serviceName string, vars map[string][]*services.VariableDefiniti
 	<div>
 		<div class="flex items-center mb-4 justify-between">
 			<h2 class="text-3xl font-semibold text-gray-800">Variables</h2>
-			<a href={ templ.URL("/services/" + serviceName + "/edit") } class="bg-blue-600 p-2 rounded-md cursor-pointer" title="Edit Variables">
+			<a href={ config.BuildSafeURL("/services/" + serviceName + "/edit") } class="bg-blue-600 p-2 rounded-md cursor-pointer" title="Edit Variables">
 				@icons.Edit("w-5 h-5")
 			</a>
 		</div>

@@ -1,11 +1,14 @@
 package components
 
-import "hybr/internal/docker"
+import (
+	"hybr/cmd/server/config"
+	"hybr/internal/docker"
+)
 
 templ DockerComponents(serviceName string, comps []*docker.Component) {
 	<div
 		hx-ext="sse"
-		sse-connect={ "/services/" + serviceName + "/components" }
+		sse-connect={ config.BuildHostURL("/services/" + serviceName + "/components") }
 	>
 		<h2 class="text-2xl font-semibold mb-4 text-gray-800">Components</h2>
 		<table class="w-full">

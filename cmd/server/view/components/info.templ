@@ -1,6 +1,7 @@
 package components
 
 import (
+	"hybr/cmd/server/config"
 	"hybr/cmd/server/view/icons"
 	"strings"
 )
@@ -10,6 +11,9 @@ func isURL(key string) bool {
 }
 
 func getRedirectURL(val string) templ.SafeURL {
+	if strings.HasPrefix(val, "http") {
+		return templ.SafeURL(val)
+	}
 	return templ.SafeURL("http://" + val)
 }
 
@@ -28,7 +32,7 @@ templ Info(serviceName, title string, keys, vals []string) {
 	<div
 		class="space-y-4"
 		hx-ext="sse"
-		sse-connect={ "/services/" + serviceName + "/status" }
+		sse-connect={ config.BuildHostURL("/services/" + serviceName + "/status") }
 	>
 		<h2 class="text-2xl font-semibold mb-4 text-gray-800">{ title }</h2>
 		for i, key := range keys {
