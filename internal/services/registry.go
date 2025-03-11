@@ -21,7 +21,7 @@ var (
 	installationRegistry *InstallationRegistry
 )
 
-func InitRegistry(forceResetTemplates bool) {
+func InitRegistry(forceResetTemplates bool, authKey string) {
 	if forceResetTemplates {
 		cleanWorkingDirectory()
 	}
@@ -144,4 +144,16 @@ func (r *InstallationRegistry) RemoveInstalltion(name string) error {
 	r.mu.Unlock()
 
 	return r.save()
+}
+
+func ListInstalledServiceNames() []string {
+	r := GetRegistry()
+	r.mu.RLock()
+	defer r.mu.RUnlock()
+
+	services := make([]string, 0, len(r.installations))
+	for _, service := range r.installations {
+		services = append(services, service.Name)
+	}
+	return services
 }

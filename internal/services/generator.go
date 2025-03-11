@@ -3,7 +3,8 @@ package services
 import (
 	"fmt"
 	"hybr/internal/docker"
-	"hybr/internal/nginx"
+	"hybr/internal/system"
+	"hybr/internal/tailscale"
 	"os"
 	"os/exec"
 	"path/filepath"
@@ -39,17 +40,23 @@ func initWorkingDirectory() error {
 	return nil
 }
 
-func buildTemplateData(vars []*VariableDefinition) map[string]string {
-	data := make(map[string]string)
+func buildTemplateData(vars []*VariableDefinition, service HybrService) map[string]any {
+	dns := tailscale.GetDNSName()
+	data := make(map[string]any)
 
 	for _, v := range vars {
 		data[v.Name] = v.Value
 	}
 
+	data["Extras"] = map[string]string{
+		"TS_DNS_NAME":  dns,
+		"SERVICE_NAME": service.GetName(),
+	}
+
 	return data
 }
 
-func InstallServices(selected []HybrService, bc nginx.NginxConfig) (err error) {
+func InstallServices(selected []HybrService) (err error) {
 	ir := GetRegistry()
 
 	for _, service := range selected {
@@ -68,7 +75,6 @@ func InstallServices(selected []HybrService, bc nginx.NginxConfig) (err error) {
 			Name:        service.GetName(),
 			Components:  []*docker.Component{},
 			Variables:   make(map[string][]*VariableDefinition),
-			URL:         nginx.BuildServerName(service.IsSubDomain(), bc.GetDomain(), service.GetName()),
 		}
 
 		for fileName, vars := range service.GetVariables() {
@@ -87,19 +93,25 @@ func InstallServices(selected []HybrService, bc nginx.NginxConfig) (err error) {
 			return err
 		}
 
-		if err := nginx.AddSevice(service.GetName(), port, service.IsSubDomain()); err != nil {
-			installation.Status = "failed"
-			ir.AddInstallation(installation)
-			return err
+		magicDNSURL, err := tailscale.AddServeTunnel(
+			service.GetIsRoot(),
+			installation.GetName(),
+			installation.GetPort(),
+			service.GetTailscaleProxy(),
+		)
+
+		if err != nil {
+			fmt.Printf("tailscale ERROR: %v\n", err)
+			os.Exit(1)
 		}
 
 		installation.Status = "running"
+		installation.URL = magicDNSURL
 		if err := ir.AddInstallation(installation); err != nil {
 			return err
 		}
 
-		fmt.Printf("\n[%s] Is Installed and Nginx Is Configured\n", service.GetName())
-		fmt.Printf("[%s] Is Running at %s\n", service.GetName(), installation.URL)
+		fmt.Printf("[%s] Is Running at %s\n", service.GetName(), magicDNSURL)
 	}
 
 	return
@@ -121,7 +133,7 @@ func StartService(serviceName string) error {
 	serviceDir := filepath.Join(GetHybrDirectory(), "services", serviceName)
 	cmd := exec.Command("sh", "-c", "docker compose up -d")
 	cmd.Dir = serviceDir
-	if err := nginx.PipeCmdToStdout(cmd, "docker"); err != nil {
+	if err := system.PipeCmdToStdout(cmd, "docker"); err != nil {
 		return err
 	}
 
@@ -132,7 +144,7 @@ func StopService(serviceName string) error {
 	serviceDir := filepath.Join(GetHybrDirectory(), "services", serviceName)
 	cmd := exec.Command("sh", "-c", "docker compose down -v")
 	cmd.Dir = serviceDir
-	if err := nginx.PipeCmdToStdout(cmd, "docker"); err != nil {
+	if err := system.PipeCmdToStdout(cmd, "docker"); err != nil {
 		return err
 	}
 	return nil
@@ -169,7 +181,7 @@ func installTemplates(service HybrService, serviceName string) (string, error) {
 		if !exists {
 			err = tmpl.Execute(out, nil)
 		} else {
-			err = tmpl.Execute(out, buildTemplateData(varDef))
+			err = tmpl.Execute(out, buildTemplateData(varDef, service))
 			if port == "" {
 				port = findPort(varDef)
 			}
@@ -211,7 +223,7 @@ func reinstallTemplates(service HybrService, serviceName string) error {
 		if !exists {
 			err = tmpl.Execute(out, nil)
 		} else {
-			err = tmpl.Execute(out, buildTemplateData(varDef))
+			err = tmpl.Execute(out, buildTemplateData(varDef, service))
 		}
 
 		return nil
@@ -223,7 +235,7 @@ func runInstallCommand(serviceName string, installation *serviceImpl) error {
 	cmd := exec.Command("sh", "-c", "docker compose up -d")
 	cmd.Dir = serviceDir
 
-	if err := nginx.PipeCmdToStdout(cmd, serviceName); err != nil {
+	if err := system.PipeCmdToStdout(cmd, serviceName); err != nil {
 		return fmt.Errorf("Unable to install %s Service", serviceName)
 	}
 

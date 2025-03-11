@@ -20,24 +20,26 @@ var (
 
 type HybrService interface {
 	GetName() string
-	GetDescription() string
-	IsSubDomain() bool
-	GetTemplates() []string
-	GetVariables() map[string][]*VariableDefinition
-	GetStatus() string
-	GetPort() string
 	GetURL() string
-	GetComponents() []*docker.Component
+	GetPort() string
+	GetStatus() string
+	GetIsRoot() bool
+	GetDescription() string
+	GetTemplates() []string
+	GetTailscaleProxy() string
 	GetInstallDate() time.Time
 	GetLastStartTime() time.Time
+	GetComponents() []*docker.Component
+	GetVariables() map[string][]*VariableDefinition
 }
 
 type serviceImpl struct {
-	Name        string                           `json:"name"`
-	Description string                           `json:"description"`
-	SubDomain   bool                             `json:"subDomain"`
-	Templates   []string                         `json:"templates"`
-	Variables   map[string][]*VariableDefinition `json:"variables"`
+	Name           string                           `json:"name"`
+	IsRoot         bool                             `json:"isRoot"`
+	Description    string                           `json:"description"`
+	TailscaleProxy string                           `json:"tailscaleProxy"`
+	Templates      []string                         `json:"templates"`
+	Variables      map[string][]*VariableDefinition `json:"variables"`
 
 	Status        string
 	Port          string
@@ -57,6 +59,10 @@ type VariableDefinition struct {
 	Input    textinput.Model `json:"-"`
 }
 
+func (s *serviceImpl) GetIsRoot() bool {
+	return s.IsRoot
+}
+
 func (s *serviceImpl) GetName() string {
 	return s.Name
 }
@@ -65,8 +71,8 @@ func (s *serviceImpl) GetDescription() string {
 	return s.Description
 }
 
-func (s *serviceImpl) IsSubDomain() bool {
-	return s.SubDomain
+func (s *serviceImpl) GetTailscaleProxy() string {
+	return s.TailscaleProxy
 }
 
 func (s *serviceImpl) GetTemplates() []string {

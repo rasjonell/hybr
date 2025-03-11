@@ -1,11 +1,5 @@
 package services
 
-import (
-	"fmt"
-	"os"
-	"path/filepath"
-)
-
 func GetRegisteredServices() []HybrService {
 	mu.RLock()
 	defer mu.RUnlock()
@@ -15,35 +9,6 @@ func GetRegisteredServices() []HybrService {
 		services = append(services, s)
 	}
 	return services
-}
-
-func GetInstalledServices() []string {
-	mu.RLock()
-	defer mu.RUnlock()
-
-	servicesDir := filepath.Join(GetHybrDirectory(), "services")
-
-	var installedServices []string
-	if _, err := os.Stat(servicesDir); os.IsNotExist(err) {
-		fmt.Printf("Services directory not found")
-		return installedServices
-	}
-
-	entries, err := os.ReadDir(servicesDir)
-	if err != nil {
-		fmt.Printf("Unable to read installed services %v\n", err)
-		return installedServices
-	}
-
-	for _, entry := range entries {
-		if !entry.IsDir() {
-			continue
-		}
-
-		installedServices = append(installedServices, entry.Name())
-	}
-
-	return installedServices
 }
 
 func findPort(varDef []*VariableDefinition) string {
