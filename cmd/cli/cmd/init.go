@@ -4,18 +4,15 @@ import (
 	"fmt"
 
 	"hybr/cmd/cli/initiate"
-	"hybr/internal/nginx"
 	"hybr/internal/services"
+	"hybr/internal/tailscale"
 	"os"
 
 	"github.com/spf13/cobra"
 )
 
 type initFlagsType struct {
-	email  string
-	domain string
-
-	forceNoSSL          bool
+	authKey             string
 	forceResetTemplates bool
 }
 
@@ -27,20 +24,11 @@ func init() {
 		"forceDefaults", "f", false,
 		"Reset default templates",
 	)
-	generateCmd.Flags().BoolVar(
-		&initFlags.forceNoSSL,
-		"no-ssl", false,
-		"Don't use SSL",
-	)
+
 	generateCmd.Flags().StringVarP(
-		&initFlags.email,
-		"email", "e", "",
-		"Specify Your Email for SSL certificate generation",
-	)
-	generateCmd.Flags().StringVarP(
-		&initFlags.email,
-		"domain", "d", "",
-		"Specify Base Domain Name",
+		&initFlags.authKey,
+		"ts-auth", "a", "",
+		"Tailscale AUTH_KEY",
 	)
 
 	rootCmd.AddCommand(generateCmd)
@@ -55,9 +43,9 @@ var generateCmd = &cobra.Command{
 
 func runInit(cmd *cobra.Command, _ []string) {
 	checkRootPermissions("root privileges are required for initiating a hybr project.")
-	services.InitRegistry(initFlags.forceResetTemplates)
+	services.InitRegistry(initFlags.forceResetTemplates, initFlags.authKey)
 
-	initiate.InitCLI(initFlags.email, initFlags.domain, initFlags.forceNoSSL)
+	initiate.InitCLI()
 	if _, err := initiate.NewProgram().Run(); err != nil {
 		os.Exit(1)
 	}
@@ -69,11 +57,11 @@ func runInit(cmd *cobra.Command, _ []string) {
 		os.Exit(0)
 	}
 
-	if err := nginx.Init(model.FinalBaseConfig, initFlags.forceResetTemplates, initFlags.forceNoSSL); err != nil {
+	if err := tailscale.Start(initFlags.authKey); err != nil {
 		panic(err)
 	}
 
-	if err := services.InstallServices(model.GetFinalServices(), model.FinalBaseConfig); err != nil {
+	if err := services.InstallServices(model.GetFinalServices()); err != nil {
 		panic(err)
 	}
 }
