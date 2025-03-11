@@ -1,5 +1,11 @@
 # To Do
 
+- [x] Tailscale Integration
+    - [x] Yeet nginx (with all related shit)
+    - [x] Tailscale Manager Service
+    - [x] Update Service init/generator to have tailscale specific configs(root service, proxy path)
+    - [x] Ability to change Web Console SELF_URL_PATH
+
 - [ ] Docs
     - [ ] Figure out a proper way to host docs
     - [ ] Documentation generator
