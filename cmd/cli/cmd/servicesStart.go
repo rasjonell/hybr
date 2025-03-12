@@ -22,7 +22,8 @@ var servicesStartCmd = &cobra.Command{
 	Short: "Start the service",
 	Long: `Starts the service if it is NOT running.
 Restarts the services otherwise`,
-	Run: startService,
+	PreRun: checkRemoteHost,
+	Run:    startService,
 }
 
 func startService(cmd *cobra.Command, args []string) {

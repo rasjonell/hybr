@@ -18,10 +18,11 @@ func init() {
 }
 
 var servicesComponentsCmd = &cobra.Command{
-	Use:   "components",
-	Short: "Show service components",
-	Long:  "Shows docker components the servies is composed of",
-	Run:   showServiceComponents,
+	Use:    "components",
+	Short:  "Show service components",
+	Long:   "Shows docker components the servies is composed of",
+	PreRun: checkRemoteHost,
+	Run:    showServiceComponents,
 }
 
 func showServiceComponents(cmd *cobra.Command, args []string) {

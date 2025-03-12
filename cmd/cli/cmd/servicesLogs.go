@@ -21,10 +21,11 @@ func init() {
 }
 
 var servicesLogsCmd = &cobra.Command{
-	Use:   "logs",
-	Short: "Service logs",
-	Long:  "Shows docker compose logs for the service",
-	Run:   logService,
+	Use:    "logs",
+	Short:  "Service logs",
+	Long:   "Shows docker compose logs for the service",
+	PreRun: checkRemoteHost,
+	Run:    logService,
 }
 
 func logService(_ *cobra.Command, args []string) {
