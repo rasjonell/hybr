@@ -1,7 +1,6 @@
 package config
 
 import (
-	"fmt"
 	"os"
 	"strings"
 
@@ -14,8 +13,6 @@ var (
 )
 
 func init() {
-	fmt.Printf("host is: %s\n", hostPrefix)
-
 	if hostPrefix != "" {
 		if !strings.HasPrefix(hostPrefix, "/") {
 			hostPrefix = "/" + hostPrefix

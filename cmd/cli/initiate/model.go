@@ -48,9 +48,7 @@ func InitCLI() {
 		selected: make(map[string]services.HybrService),
 	}
 
-	if true /* check for tailscale auth key */ {
-		model.initServiceSelection()
-	}
+	model.initServiceSelection()
 }
 
 func (m *Model) initInputs() {
