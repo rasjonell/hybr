@@ -10,6 +10,7 @@ import (
 
 type serviceCmdFlag struct {
 	service string
+	remote  string
 }
 
 var serviceCmdFlags serviceCmdFlag
@@ -21,14 +22,21 @@ func init() {
 		"Name of the service",
 	)
 
+	servicesCmd.PersistentFlags().StringVarP(
+		&serviceCmdFlags.remote,
+		"remote-host", "r", "",
+		"Hostname of a remote hybr node",
+	)
+
 	rootCmd.AddCommand(servicesCmd)
 }
 
 var servicesCmd = &cobra.Command{
-	Use:   "services",
-	Short: "Show services info",
-	Long:  "Show installed services with their status",
-	Run:   listServices,
+	Use:    "services",
+	Short:  "Show services info",
+	Long:   "Show installed services with their status",
+	PreRun: checkRemoteHost,
+	Run:    listServices,
 }
 
 func listServices(cmd *cobra.Command, args []string) {
@@ -44,7 +52,6 @@ func listServices(cmd *cobra.Command, args []string) {
 	}
 
 	fmt.Printf(result + "\n\n")
-	cmd.Usage()
 }
 
 func listAllServices() string {
@@ -78,7 +85,7 @@ func listSingleService(serviceName string) string {
 	}
 
 	return fmt.Sprintf(
-		"%s  %s %s", is.GetName(),
+		"[%s]  %s%s", is.GetName(),
 		displayStatusIcon(is.GetStatus()), is.GetStatus(),
 	)
 }

@@ -10,6 +10,22 @@ import (
 
 var magicDns string
 
+func RunOnRemote(remoteHost string, remoteCmd string) (err error) {
+	fmt.Printf("Running [%s] on %s...\n\n", remoteCmd, remoteHost)
+
+	args := []string{
+		"ssh",
+		remoteHost,
+		remoteCmd,
+	}
+	cmd := exec.Command("tailscale", args...)
+	if err = system.PipeCmdToStdout(cmd, remoteHost); err != nil {
+		return err
+	}
+
+	return nil
+}
+
 func Start(authKey string) (err error) {
 	args := []string{
 		"tailscale",

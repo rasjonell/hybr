@@ -18,10 +18,11 @@ func init() {
 }
 
 var servicesStopCmd = &cobra.Command{
-	Use:   "stop",
-	Short: "Stop the service",
-	Long:  "Stop the service",
-	Run:   stopService,
+	Use:    "stop",
+	Short:  "Stop the service",
+	Long:   "Stop the service",
+	PreRun: checkRemoteHost,
+	Run:    stopService,
 }
 
 func stopService(cmd *cobra.Command, args []string) {

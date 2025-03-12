@@ -19,10 +19,11 @@ func init() {
 }
 
 var servicesInfoCmd = &cobra.Command{
-	Use:   "info",
-	Short: "Show service information",
-	Long:  "Shows service configuration",
-	Run:   showServiceInfo,
+	Use:    "info",
+	Short:  "Show service information",
+	Long:   "Shows service configuration",
+	PreRun: checkRemoteHost,
+	Run:    showServiceInfo,
 }
 
 func showServiceInfo(cmd *cobra.Command, args []string) {
