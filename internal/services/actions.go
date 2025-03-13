@@ -2,7 +2,7 @@ package services
 
 import (
 	"fmt"
-	"hybr/internal/orchestration"
+	"github.com/rasjonell/hybr/internal/orchestration"
 	"log"
 	"strings"
 )

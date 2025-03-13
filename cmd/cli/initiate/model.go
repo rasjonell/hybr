@@ -1,7 +1,7 @@
 package initiate
 
 import (
-	"hybr/internal/services"
+	"github.com/rasjonell/hybr/internal/services"
 
 	tea "github.com/charmbracelet/bubbletea"
 )

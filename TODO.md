@@ -1,17 +1,7 @@
 # To Do
 
-- [x] Tailscale Integration
-    - [x] Yeet nginx (with all related shit)
-    - [x] Tailscale Manager Service
-    - [x] Update Service init/generator to have tailscale specific configs(root service, proxy path)
-    - [x] Ability to change Web Console SELF_URL_PATH
-
-- [ ] Docs
-    - [ ] Figure out a proper way to host docs
-    - [ ] Documentation generator
-
 - [ ] CLI Improvements
-    - [] Expose Web Service Managment APIs to the CLI
+    - [ ] Expose Web Service Managment APIs to the CLI
         - [x] List Services
         - [x] Info/Components
         - [x] Start/Stop
@@ -21,6 +11,17 @@
     - [ ] Sync {initial, post install} services with a local machine
 
 # Done
+
+- [x] Tailscale Integration
+    - [x] Yeet nginx (with all related shit)
+    - [x] Tailscale Manager Service
+    - [x] Update Service init/generator to have tailscale specific configs(root service, proxy path)
+    - [x] Ability to change Web Console SELF_URL_PATH
+    - [x] CLI actions of remote hosts
+
+- [x] Docs
+    - [x] Figure out a proper way to host docs
+
 
 - [x] CLI Subcommands
     - [x] Integrate Cobra (Add `hybr version`, shell completions)

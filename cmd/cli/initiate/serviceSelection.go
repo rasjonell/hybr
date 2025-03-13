@@ -2,7 +2,7 @@ package initiate
 
 import (
 	"fmt"
-	"hybr/internal/services"
+	"github.com/rasjonell/hybr/internal/services"
 	"slices"
 	"strings"
 

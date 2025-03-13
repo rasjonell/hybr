@@ -2,12 +2,12 @@ package routes
 
 import (
 	"fmt"
-	"hybr/cmd/server/utils"
-	"hybr/cmd/server/view"
-	"hybr/cmd/server/view/components"
-	"hybr/cmd/server/view/layout"
-	"hybr/internal/orchestration"
-	"hybr/internal/system"
+	"github.com/rasjonell/hybr/cmd/server/utils"
+	"github.com/rasjonell/hybr/cmd/server/view"
+	"github.com/rasjonell/hybr/cmd/server/view/components"
+	"github.com/rasjonell/hybr/cmd/server/view/layout"
+	"github.com/rasjonell/hybr/internal/orchestration"
+	"github.com/rasjonell/hybr/internal/system"
 	"net/http"
 	"time"
 

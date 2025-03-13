@@ -3,7 +3,7 @@ package services
 import (
 	"encoding/json"
 	"fmt"
-	"hybr/internal/docker"
+	"github.com/rasjonell/hybr/internal/docker"
 	"os"
 	"path/filepath"
 	"sync"

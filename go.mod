@@ -1,4 +1,4 @@
-module hybr
+module github.com/rasjonell/hybr
 
 go 1.23.3
 
