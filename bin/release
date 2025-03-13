@@ -8,10 +8,10 @@ mkdir -p "$ROOT/.releases"
 GOOS=linux GOARCH=amd64 go build -ldflags="-s -w" -o $ROOT/.releases/hybr github.com/rasjonell/hybr/cmd/hybr && \
   upx $ROOT/.releases/hybr
 
-cd cmd/server && \
+cd cmd/hybr-console && \
   templ generate && \
   npm run build && \
-  GOOS=linux GOARCH=amd64 go build -ldflags="-s -w" -o $ROOT/.releases/hybr-console github.com/rasjonell/hybr/cmd/server && \
+  GOOS=linux GOARCH=amd64 go build -ldflags="-s -w" -o $ROOT/.releases/hybr-console github.com/rasjonell/hybr/cmd/hybr-console && \
   upx $ROOT/.releases/hybr-console
 
 chmod +x "$ROOT/.releases/hybr"

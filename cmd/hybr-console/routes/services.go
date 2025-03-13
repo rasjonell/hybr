@@ -1,10 +1,10 @@
 package routes
 
 import (
-	"github.com/rasjonell/hybr/cmd/server/utils"
-	"github.com/rasjonell/hybr/cmd/server/view"
-	"github.com/rasjonell/hybr/cmd/server/view/components"
-	"github.com/rasjonell/hybr/cmd/server/view/layout"
+	"github.com/rasjonell/hybr/cmd/hybr-console/utils"
+	"github.com/rasjonell/hybr/cmd/hybr-console/view"
+	"github.com/rasjonell/hybr/cmd/hybr-console/view/components"
+	"github.com/rasjonell/hybr/cmd/hybr-console/view/layout"
 	"github.com/rasjonell/hybr/internal/orchestration"
 	"github.com/rasjonell/hybr/internal/services"
 	"net/http"

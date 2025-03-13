@@ -1,7 +1,7 @@
 /.releases
 /test.sh
-/cmd/server/view/**/*_templ.go
-/cmd/server/static/css/tailwind.css
-/cmd/server/node_modules
-/cmd/server/bin
+/cmd/hybr-console/view/**/*_templ.go
+/cmd/hybr-console/static/css/tailwind.css
+/cmd/hybr-console/node_modules
+/cmd/hybr-console/bin
 /CHANGELOG.md
