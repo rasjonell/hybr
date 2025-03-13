@@ -2,9 +2,9 @@ package services
 
 import (
 	"fmt"
-	"hybr/internal/docker"
-	"hybr/internal/system"
-	"hybr/internal/tailscale"
+	"github.com/rasjonell/hybr/internal/docker"
+	"github.com/rasjonell/hybr/internal/system"
+	"github.com/rasjonell/hybr/internal/tailscale"
 	"os"
 	"os/exec"
 	"path/filepath"

@@ -2,7 +2,7 @@ package cmd
 
 import (
 	"fmt"
-	"hybr/internal/services"
+	"github.com/rasjonell/hybr/internal/services"
 	"strings"
 
 	"github.com/spf13/cobra"

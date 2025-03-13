@@ -3,7 +3,7 @@ package services
 import (
 	"bufio"
 	"fmt"
-	"hybr/internal/orchestration"
+	"github.com/rasjonell/hybr/internal/orchestration"
 	"os/exec"
 	"path/filepath"
 	"time"

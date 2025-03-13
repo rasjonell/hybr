@@ -3,7 +3,7 @@ package services
 import (
 	"embed"
 	"encoding/json"
-	"hybr/internal/docker"
+	"github.com/rasjonell/hybr/internal/docker"
 	"io"
 	"os"
 	"path/filepath"

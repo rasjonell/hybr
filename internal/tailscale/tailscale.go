@@ -3,7 +3,7 @@ package tailscale
 import (
 	"encoding/json"
 	"fmt"
-	"hybr/internal/system"
+	"github.com/rasjonell/hybr/internal/system"
 	"os/exec"
 	"strings"
 )

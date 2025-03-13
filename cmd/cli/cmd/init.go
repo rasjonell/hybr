@@ -3,9 +3,9 @@ package cmd
 import (
 	"fmt"
 
-	"hybr/cmd/cli/initiate"
-	"hybr/internal/services"
-	"hybr/internal/tailscale"
+	"github.com/rasjonell/hybr/cmd/cli/initiate"
+	"github.com/rasjonell/hybr/internal/services"
+	"github.com/rasjonell/hybr/internal/tailscale"
 	"os"
 
 	"github.com/spf13/cobra"

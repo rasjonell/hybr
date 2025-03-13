@@ -2,8 +2,8 @@ package cmd
 
 import (
 	"fmt"
-	"hybr/internal/services"
-	"hybr/internal/tailscale"
+	"github.com/rasjonell/hybr/internal/services"
+	"github.com/rasjonell/hybr/internal/tailscale"
 	"os"
 	"os/exec"
 	"path/filepath"

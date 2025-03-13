@@ -1,7 +1,7 @@
 package main
 
 import (
-	"hybr/cmd/cli/cmd"
+	"github.com/rasjonell/hybr/cmd/cli/cmd"
 )
 
 func main() {

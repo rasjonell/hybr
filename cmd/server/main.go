@@ -2,9 +2,9 @@ package main
 
 import (
 	"embed"
-	"hybr/cmd/server/config"
-	"hybr/cmd/server/routes"
-	"hybr/internal/services"
+	"github.com/rasjonell/hybr/cmd/server/config"
+	"github.com/rasjonell/hybr/cmd/server/routes"
+	"github.com/rasjonell/hybr/internal/services"
 	"io/fs"
 	"log"
 	"net/http"

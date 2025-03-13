@@ -5,13 +5,13 @@ ROOT="$(pwd)"
 rm -rf "$ROOT/.releases"
 mkdir -p "$ROOT/.releases"
 
-GOOS=linux GOARCH=amd64 go build -ldflags="-s -w" -o $ROOT/.releases/hybr hybr/cmd/cli && \
+GOOS=linux GOARCH=amd64 go build -ldflags="-s -w" -o $ROOT/.releases/hybr github.com/rasjonell/hybr/cmd/cli && \
   upx $ROOT/.releases/hybr
 
 cd cmd/server && \
   templ generate && \
   npm run build && \
-  GOOS=linux GOARCH=amd64 go build -ldflags="-s -w" -o $ROOT/.releases/hybr-console hybr/cmd/server && \
+  GOOS=linux GOARCH=amd64 go build -ldflags="-s -w" -o $ROOT/.releases/hybr-console github.com/rasjonell/hybr/cmd/server && \
   upx $ROOT/.releases/hybr-console
 
 chmod +x "$ROOT/.releases/hybr"

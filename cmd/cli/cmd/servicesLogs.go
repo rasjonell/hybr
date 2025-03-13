@@ -2,8 +2,8 @@ package cmd
 
 import (
 	"fmt"
-	"hybr/internal/services"
-	"hybr/internal/system"
+	"github.com/rasjonell/hybr/internal/services"
+	"github.com/rasjonell/hybr/internal/system"
 	"os/exec"
 	"path/filepath"
 

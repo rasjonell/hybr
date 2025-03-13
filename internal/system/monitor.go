@@ -3,7 +3,7 @@ package system
 import (
 	"bufio"
 	"fmt"
-	"hybr/internal/orchestration"
+	"github.com/rasjonell/hybr/internal/orchestration"
 	"os"
 	"strconv"
 	"strings"
