@@ -5,7 +5,7 @@ ROOT="$(pwd)"
 rm -rf "$ROOT/.releases"
 mkdir -p "$ROOT/.releases"
 
-GOOS=linux GOARCH=amd64 go build -ldflags="-s -w" -o $ROOT/.releases/hybr github.com/rasjonell/hybr/cmd/cli && \
+GOOS=linux GOARCH=amd64 go build -ldflags="-s -w" -o $ROOT/.releases/hybr github.com/rasjonell/hybr/cmd/hybr && \
   upx $ROOT/.releases/hybr
 
 cd cmd/server && \

@@ -3,7 +3,7 @@ package cmd
 import (
 	"fmt"
 
-	"github.com/rasjonell/hybr/cmd/cli/initiate"
+	"github.com/rasjonell/hybr/cmd/hybr/initiate"
 	"github.com/rasjonell/hybr/internal/services"
 	"github.com/rasjonell/hybr/internal/tailscale"
 	"os"
