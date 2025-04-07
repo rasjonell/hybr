@@ -12,7 +12,7 @@ windows:
   - CLI:
       layout: main-vertical
       panes:
-        - go run hybr/cmd/cli
+        - ls -al
 
 
   - Server:
@@ -23,4 +23,4 @@ windows:
   - VPS:
       layout: main-vertical
       panes:
-        - TERM=linux ssh rasjonell@rasjonell.info
+        - echo "TERM=linux ssh vultr"
