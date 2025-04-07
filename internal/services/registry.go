@@ -3,11 +3,12 @@ package services
 import (
 	"encoding/json"
 	"fmt"
-	"github.com/rasjonell/hybr/internal/docker"
 	"os"
 	"path/filepath"
 	"sync"
 	"time"
+
+	"github.com/rasjonell/hybr/internal/docker"
 )
 
 type InstallationRegistry struct {
@@ -21,12 +22,12 @@ var (
 	installationRegistry *InstallationRegistry
 )
 
-func InitRegistry(forceResetTemplates bool, authKey string) {
+func InitRegistry(forceResetTemplates bool) {
+	initWorkingDirectory()
 	if forceResetTemplates {
-		cleanWorkingDirectory()
+		clearAndCopyDefaults()
 	}
 
-	initWorkingDirectory()
 	services := initializeServices()
 
 	for _, service := range services {

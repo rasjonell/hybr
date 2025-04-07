@@ -1,0 +1,24 @@
+{
+  "name": "tt-rss",
+  "description": "Tiny Tiny RSS - Self-hosted news feed aggregator",
+  "hybrProxy": "/tt-rss",
+  "tailscaleProxy": "/tt-rss",
+  "variables": {
+    ".env.templ": [
+      {
+        "name": "PORT",
+        "default": "8280",
+        "description": "HTTP Port"
+      },
+      {
+        "default": "Password",
+        "name": "ADMIN_USER_PASS",
+        "description": "Admin user password for TT-RSS"
+      }
+    ]
+  },
+  "templates": [
+    "docker-compose.yml.templ",
+    ".env.templ"
+  ]
+}
