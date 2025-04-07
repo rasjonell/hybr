@@ -3,12 +3,16 @@ package services
 import (
 	"embed"
 	"encoding/json"
-	"github.com/rasjonell/hybr/internal/docker"
+	"fmt"
 	"io"
+	"io/fs"
 	"os"
 	"path/filepath"
+	"strings"
 	"sync"
 	"time"
+
+	"github.com/rasjonell/hybr/internal/docker"
 
 	"github.com/charmbracelet/bubbles/textinput"
 )
@@ -23,9 +27,9 @@ type HybrService interface {
 	GetURL() string
 	GetPort() string
 	GetStatus() string
-	GetIsRoot() bool
 	GetDescription() string
 	GetTemplates() []string
+	GetHybrProxy() string
 	GetTailscaleProxy() string
 	GetInstallDate() time.Time
 	GetLastStartTime() time.Time
@@ -36,6 +40,7 @@ type HybrService interface {
 type serviceImpl struct {
 	Name           string                           `json:"name"`
 	IsRoot         bool                             `json:"isRoot"`
+	HybrProxy      string                           `json:"hybrProxy"`
 	Description    string                           `json:"description"`
 	TailscaleProxy string                           `json:"tailscaleProxy"`
 	Templates      []string                         `json:"templates"`
@@ -59,8 +64,8 @@ type VariableDefinition struct {
 	Input    textinput.Model `json:"-"`
 }
 
-func (s *serviceImpl) GetIsRoot() bool {
-	return s.IsRoot
+func (s *serviceImpl) GetHybrProxy() string {
+	return s.HybrProxy
 }
 
 func (s *serviceImpl) GetName() string {
@@ -119,65 +124,119 @@ func register(s *serviceImpl) {
 	registry[s.GetName()] = s
 }
 
-//go:embed templates/services.json
-var defaultJsonData []byte
-
-//go:embed templates/**/*
+//go:embed all:templates/**/*
 var templatesFS embed.FS
 
-func initializeServices() []*serviceImpl {
-	var err error = nil
-	var services []*serviceImpl
+func initWorkingDirectory() error {
+	if err := os.MkdirAll(filepath.Join(GetHybrDirectory(), "services"), 0755); err != nil {
+		return err
+	}
 
+	return nil
+}
+
+func clearAndCopyDefaults() {
 	servicesPath := filepath.Join(GetHybrDirectory(), "services")
-	destPath := filepath.Join(GetHybrDirectory(), "services.json")
 
-	_, err = os.Stat(destPath)
-	if err == nil {
-		data, err := os.ReadFile(destPath)
-		if err != nil {
-			panic("Unable To Read services.json")
-		}
+	entries, err := os.ReadDir(servicesPath)
+	if err != nil {
+		panic(err)
+	}
 
-		if err := json.Unmarshal(data, &services); err != nil {
-			panic(err)
+	for _, entry := range entries {
+		if entry.IsDir() {
+			entryPath := filepath.Join(servicesPath, entry.Name())
+			if err := os.RemoveAll(entryPath); err != nil {
+				panic(err)
+			}
 		}
 	}
 
-	if os.IsNotExist(err) {
-		if err := os.WriteFile(destPath, defaultJsonData, 0644); err != nil {
+	err = fs.WalkDir(templatesFS, "templates", func(path string, d fs.DirEntry, err error) error {
+		if err != nil {
+			return err
+		}
+
+		if path == "templates" {
+			return nil
+		}
+
+		relativePath := strings.TrimPrefix(path, "templates")
+		destPath := filepath.Join(servicesPath, relativePath)
+
+		if d.IsDir() {
+			if err := os.MkdirAll(destPath, 0755); err != nil {
+				return err
+			}
+			return nil
+		}
+
+		destFile, err := os.Create(destPath)
+		if err != nil {
+			return err
+		}
+		defer destFile.Close()
+
+		sourceFile, err := templatesFS.Open(path)
+		if err != nil {
+			return fmt.Errorf("Failed opening file %s: %w", path, err)
+		}
+		defer sourceFile.Close()
+
+		_, err = io.Copy(destFile, sourceFile)
+		if err != nil {
+			return fmt.Errorf("Failed copying file %s to %s: %w", path, destPath, err)
+		}
+
+		return nil
+	})
+
+	if err != nil {
+		panic(err)
+	}
+}
+
+func initializeServices() []*serviceImpl {
+	var services []*serviceImpl
+	servicesPath := filepath.Join(GetHybrDirectory(), "services")
+
+	entries, err := os.ReadDir(servicesPath)
+	if err != nil {
+		panic(err)
+	}
+
+	for _, entry := range entries {
+		if !entry.IsDir() {
+			continue
+		}
+
+		serviceFilePath := filepath.Join(servicesPath, entry.Name(), "service.json")
+
+		if err := ValidateServiceJSON(serviceFilePath); err != nil {
+			if shouldContinue := ConfirmInvalidService(err); shouldContinue {
+				continue
+			} else {
+				os.Exit(1)
+			}
+		}
+
+		data, err := os.ReadFile(serviceFilePath)
+
+		if os.IsNotExist(err) {
+			fmt.Printf("Found service without service.json: %s", entry.Name())
+			continue
+		}
+
+		if err != nil {
 			panic(err)
 		}
 
-		if err := json.Unmarshal(defaultJsonData, &services); err != nil {
-			panic(err)
+		var service serviceImpl
+		if err := json.Unmarshal(data, &service); err != nil {
+			panic(fmt.Errorf("Data: %s\nErr: %w\nPath: %s", string(data), err, serviceFilePath))
 		}
 
-		for _, s := range services {
-			tPath := filepath.Join(servicesPath, s.Name, "templates")
-			if err := os.MkdirAll(tPath, 0755); err != nil {
-				panic(err)
-			}
-
-			for _, templName := range s.Templates {
-				sourceFile, err := templatesFS.Open(filepath.Join("templates", s.Name, templName))
-				if err != nil {
-					panic(err)
-				}
-				defer sourceFile.Close()
-
-				destFile, err := os.Create(filepath.Join(tPath, templName))
-				if err != nil {
-					panic(err)
-				}
-				defer destFile.Close()
-
-				_, err = io.Copy(destFile, sourceFile)
-				if err != nil {
-					panic(err)
-				}
-			}
-		}
+		services = append(services, &service)
 	}
 
 	return services

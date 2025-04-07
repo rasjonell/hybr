@@ -14,30 +14,17 @@ import (
 )
 
 const (
-	HybrDir = "/var/lib/hybr"
+	HybrDir = ".hybr"
 )
 
 func GetHybrDirectory() string {
 	if path := os.Getenv("HYBR_DIR"); path != "" {
 		return path
 	}
-	return HybrDir
-}
 
-func cleanWorkingDirectory() error {
-	if err := os.RemoveAll(GetHybrDirectory()); err != nil {
-		return err
-	}
+	homeDir, _ := os.UserHomeDir()
 
-	return nil
-}
-
-func initWorkingDirectory() error {
-	if err := os.MkdirAll(filepath.Join(GetHybrDirectory(), "services"), 0755); err != nil {
-		return err
-	}
-
-	return nil
+	return filepath.Join(homeDir, HybrDir)
 }
 
 func buildTemplateData(vars []*VariableDefinition, service HybrService) map[string]any {
@@ -94,14 +81,13 @@ func InstallServices(selected []HybrService) (err error) {
 		}
 
 		magicDNSURL, err := tailscale.AddServeTunnel(
-			service.GetIsRoot(),
-			installation.GetName(),
+			service.GetHybrProxy(),
 			installation.GetPort(),
 			service.GetTailscaleProxy(),
 		)
 
 		if err != nil {
-			fmt.Printf("tailscale ERROR: %v\n", err)
+			fmt.Printf("Tailscale ERROR: %v\n", err)
 			os.Exit(1)
 		}
 

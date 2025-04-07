@@ -28,6 +28,7 @@ func RunOnRemote(remoteHost string, remoteCmd string) (err error) {
 
 func Start(authKey string) (err error) {
 	args := []string{
+		"-p", "Enter your password to start tailscale:",
 		"tailscale",
 		"up",
 		"--ssh",
@@ -50,7 +51,7 @@ func Start(authKey string) (err error) {
 }
 
 func Stop() error {
-	cmd := exec.Command("sudo", "tailscale", "down")
+	cmd := exec.Command("sudo", "-p", "Enter your password to stop tailscale:", "tailscale", "down")
 	if err := system.PipeCmdToStdout(cmd, "tailscale"); err != nil {
 		return err
 	}
@@ -58,15 +59,16 @@ func Stop() error {
 	return nil
 }
 
-func AddServeTunnel(isRoot bool, name, port, proxy string) (string, error) {
-	path := "/"
-	if !isRoot {
-		path += name
-	}
+func AddServeTunnel(hybrProxy, port, tailscaleProxy string) (string, error) {
+	path := "/" + strings.TrimPrefix(tailscaleProxy, "/")
+	hybrPath := strings.TrimPrefix(hybrProxy, "/")
+
 	cmd := exec.Command(
-		"sudo", "tailscale", "serve",
+		"sudo",
+		"-p", "Enter your password to add tailscale serve tunnel:",
+		"tailscale", "serve",
 		"--bg", "--set-path", path,
-		fmt.Sprintf("localhost:%s/%s", port, proxy),
+		fmt.Sprintf("localhost:%s/%s", port, hybrPath),
 	)
 
 	if err := system.PipeCmdToStdout(cmd, "tailscale"); err != nil {
