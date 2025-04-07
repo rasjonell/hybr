@@ -67,8 +67,8 @@ func getFullCmd(cmd *cobra.Command) string {
 	finalCmd := fmt.Sprintf("%s ", cmd.Name())
 	cmd.Flags().Visit(func(f *pflag.Flag) {
 		// Omit remote host from remote execution command
-		if f.Shorthand != "r" {
-			finalCmd += fmt.Sprintf("-%s %s ", f.Shorthand, f.Value)
+		if f.Name != "host" {
+			finalCmd += fmt.Sprintf("--%s %s ", f.Name, f.Value)
 		}
 	})
 
@@ -76,7 +76,7 @@ func getFullCmd(cmd *cobra.Command) string {
 }
 
 func checkHybrInstallation(cmd *cobra.Command) {
-	_, err := os.Stat(filepath.Join(services.HybrDir, "installations.json"))
+	_, err := os.Stat(filepath.Join(services.GetHybrDirectory(), "installations.json"))
 	if os.IsNotExist(err) {
 		fmt.Println("\nLooks like hybr was not initialized on this system")
 		fmt.Println("Please either initialize services by running:")

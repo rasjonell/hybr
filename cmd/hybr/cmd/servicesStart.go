@@ -27,7 +27,6 @@ Restarts the services otherwise`,
 }
 
 func startService(cmd *cobra.Command, args []string) {
-	checkRootPermissions()
 	is, err := getService(serviceCmdFlags.service)
 	if err != nil {
 		fmt.Println(err)

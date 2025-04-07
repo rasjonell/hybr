@@ -12,7 +12,7 @@ var rootCmd = &cobra.Command{
 	Short: "hybr is self-hosted service management platform",
 	Long: `Hybr - A Fast and Simple Self-Hosted Service Management Platform built with
        love by rasjonell in Go.
-       Complete documentation is available at https://docs.hybr.dev`,
+       Complete documentation is available at https://hybr.dev`,
 	Run: func(cmd *cobra.Command, args []string) {
 		cmd.Help()
 	},
