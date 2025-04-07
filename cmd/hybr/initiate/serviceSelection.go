@@ -9,17 +9,17 @@ import (
 	"github.com/charmbracelet/bubbles/help"
 	"github.com/charmbracelet/bubbles/key"
 	tea "github.com/charmbracelet/bubbletea"
+	"github.com/charmbracelet/lipgloss"
 )
 
 type selectionKeyMap struct {
 	Up     key.Binding
 	Down   key.Binding
-	Left   key.Binding
-	Right  key.Binding
 	Space  key.Binding
 	Return key.Binding
 	Quit   key.Binding
 	Help   key.Binding
+	CtrlA  key.Binding
 }
 
 var selectionHelp help.Model = help.New()
@@ -36,8 +36,8 @@ func (k selectionKeyMap) ShortHelp() []key.Binding {
 
 func (k selectionKeyMap) FullHelp() [][]key.Binding {
 	return [][]key.Binding{
-		{k.Up, k.Down, k.Left, k.Right},
-		k.ShortHelp(),
+		{k.Up, k.Down, k.Return, k.Help},
+		{k.Space, k.CtrlA, k.Quit},
 	}
 }
 
@@ -50,17 +50,13 @@ var selectionKeys = selectionKeyMap{
 		key.WithKeys("down", "j"),
 		key.WithHelp("↓/j", "move down"),
 	),
-	Left: key.NewBinding(
-		key.WithKeys("left", "h"),
-		key.WithHelp("←/h", "move left"),
-	),
-	Right: key.NewBinding(
-		key.WithKeys("right", "l"),
-		key.WithHelp("→/l", "select all"),
+	CtrlA: key.NewBinding(
+		key.WithKeys("ctrl+a", "a"),
+		key.WithHelp("ctrl+a", "select all"),
 	),
 	Space: key.NewBinding(
 		key.WithKeys(" "),
-		key.WithHelp("␣", "select none"),
+		key.WithHelp("␣", "select"),
 	),
 	Return: key.NewBinding(
 		key.WithKeys("enter"),
@@ -100,14 +96,15 @@ func (m *Model) updateServiceSelection(msg tea.Msg) (tea.Model, tea.Cmd) {
 				m.cursor++
 			}
 
-		case key.Matches(msg, selectionKeys.Left):
-			m.selectedServiceNames = []string{}
-			m.selected = map[string]services.HybrService{}
-
-		case key.Matches(msg, selectionKeys.Right):
-			for _, s := range m.services {
-				m.selected[s.GetName()] = s
-				m.selectedServiceNames = append(m.selectedServiceNames, s.GetName())
+		case key.Matches(msg, selectionKeys.CtrlA):
+			if len(m.services) == len(m.selectedServiceNames) {
+				m.selected = make(map[string]services.HybrService)
+				m.selectedServiceNames = make([]string, 0)
+			} else {
+				for _, s := range m.services {
+					m.selected[s.GetName()] = s
+					m.selectedServiceNames = append(m.selectedServiceNames, s.GetName())
+				}
 			}
 
 		case key.Matches(msg, selectionKeys.Space):
@@ -126,8 +123,6 @@ func (m *Model) updateServiceSelection(msg tea.Msg) (tea.Model, tea.Cmd) {
 			if len(m.selectedServiceNames) == 0 {
 				return m, tea.Quit
 			}
-
-			m.cursor = 0
 			m.initInputs()
 			m.step = StepVariableInput
 		}
@@ -143,6 +138,8 @@ func (m *Model) viewServiceSelection() string {
 	}
 
 	for i, service := range m.services {
+		_, exists := services.GetRegistry().GetInstallation(service.GetName())
+
 		cursorIndicator := " "
 		if i == m.cursor {
 			cursorIndicator = ">"
@@ -159,6 +156,29 @@ func (m *Model) viewServiceSelection() string {
 				cursorIndicator, selectionIndicator, service.GetDescription(),
 			),
 		)
+
+		if exists {
+			style := lipgloss.NewStyle().
+				Bold(true).
+				Background(lipgloss.Color("#ff0000")).
+				MarginLeft(len(selectionIndicator) + 2)
+
+			lines = append(lines,
+				style.Render("This is an already installed service, selecting it will override current installation!"),
+				"",
+			)
+		} else {
+			style := lipgloss.NewStyle().
+				Bold(true).
+				Background(lipgloss.Color("#083808")).
+				MarginLeft(len(selectionIndicator) + 2)
+
+			lines = append(lines,
+				style.Render("This is new service, selecting it will create a fresh new installation!"),
+				"",
+			)
+		}
+
 	}
 
 	lines = append(lines, "\n", selectionHelp.View(selectionKeys))

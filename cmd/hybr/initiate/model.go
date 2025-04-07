@@ -9,8 +9,7 @@ import (
 type Step int
 
 const (
-	StepTailscaleInput Step = iota
-	StepServiceSelection
+	StepServiceSelection Step = iota
 	StepVariableInput
 	StepConfirmation
 )
@@ -44,7 +43,7 @@ func InitCLI() {
 		cursor:   0,
 		Done:     false,
 		services: registeredServices,
-		step:     StepTailscaleInput,
+		step:     StepServiceSelection,
 		selected: make(map[string]services.HybrService),
 	}
 
@@ -81,9 +80,6 @@ func (m *Model) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
 		m.height = msg.Height
 	default:
 		switch m.step {
-		case StepTailscaleInput:
-			return m, nil
-
 		case StepServiceSelection:
 			return m.updateServiceSelection(msg)
 
@@ -100,9 +96,6 @@ func (m *Model) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
 
 func (m *Model) View() string {
 	switch m.step {
-	case StepTailscaleInput:
-		return "Tailscale"
-
 	case StepServiceSelection:
 		return m.viewServiceSelection()
 
