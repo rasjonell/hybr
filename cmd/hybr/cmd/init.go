@@ -42,8 +42,7 @@ var generateCmd = &cobra.Command{
 }
 
 func runInit(cmd *cobra.Command, _ []string) {
-	checkRootPermissions("root privileges are required for initiating a hybr project.")
-	services.InitRegistry(initFlags.forceResetTemplates, initFlags.authKey)
+	services.InitRegistry(initFlags.forceResetTemplates)
 
 	initiate.InitCLI()
 	if _, err := initiate.NewProgram().Run(); err != nil {

@@ -26,7 +26,6 @@ var servicesStopCmd = &cobra.Command{
 }
 
 func stopService(cmd *cobra.Command, args []string) {
-	checkRootPermissions()
 	is, err := getService(serviceCmdFlags.service)
 	if err != nil {
 		fmt.Println(err)
