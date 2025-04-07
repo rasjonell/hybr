@@ -1,10 +1,10 @@
 package docker
 
 import (
-	"os"
 	"path/filepath"
 
 	"gopkg.in/yaml.v3"
+	"os"
 )
 
 type Component struct {
